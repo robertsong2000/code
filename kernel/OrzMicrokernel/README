@@ -1,0 +1,35 @@
+Orz Microkernel - version 0.rz
+
+Orz Microkernel is a tiny microkernel written in 80386 Protected
+Mode Assembly with message-based design. Orz Microkernel is 
+inspired by Minix[1], and the detailed messages are as following:
+  . Sleep
+  . GetTickCount
+  . FindTaskByName
+  . RmodeInt (Real mode interrupt routines used for VGA/MMU)
+  . EnumTasksID
+  . GetTaskName
+  . KillTask
+  . Exit
+  . GetScanCode
+
+The interrupts are as following:
+  . int 0x30 - GetMessage
+  . int 0x31 - SendMessageW
+  . int 0x32 - ProcessMessage
+  . int 0x33 - RemoveMessage
+  . int 0x34 - SendAnswer
+
+Orz Microkernel is licensed under BSD-like license. See the file
+"LICENSE.txt" for details.
+
+Additionally, Orz Microkernel includes a complete operating system
+environment, which provides a small bootloader, disk utility, shell,
+and sample programs ("Hello World" and floppy dumper). All of them
+require NASM[2] to get built, and it is recommended to use qemu[3]
+for testing. Refer to the script file "run.sh" to know how to launch
+the distribution.
+
+[1] http://www.minix.org/
+[2] http://sourceforge.net/projects/nasm
+[3] http://fabrice.bellard.free.fr/qemu/
