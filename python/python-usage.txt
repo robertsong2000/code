@@ -1,0 +1,25 @@
+======================================================================
+Python usage memo
+
+robertsong.japan@gmail.com
+======================================================================
+[Contents]
+  1. Overview
+  2. Tips
+
+1. Overview
+===========
+It's a memo of my python study.
+
+2. Tips
+=======
+2.1. Search for definition
+--------------------------
+$ python
+>>> import time
+>>> help(time.ctime)
+
+3. Change log
+=============
+
+2013/07/28      Intial version
