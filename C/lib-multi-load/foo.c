@@ -7,6 +7,12 @@ __attribute__((constructor)) static void foo_init()
 	return;
 }
 
+__attribute__((destructor)) static void foo_des()
+{
+	printf("destructor\n");
+	return;
+}
+
 int foo(void)
 {
 	printf("foo in foo.c\n");
