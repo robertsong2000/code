@@ -17,10 +17,10 @@ from ctypes import *
 from math import *
 import pygame
 import random
-import screenshot
+#import screenshot
 import time
 import numpy # for black textures
-from shaderlib import *
+#from shaderlib import *
 
 pygame.init()
 

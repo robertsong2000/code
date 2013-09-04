@@ -12,16 +12,13 @@ __author__ = 'Tarn Weisner Burton <twburton@users.sourceforge.net>'
 #
 # Ported to PyOpenGL 2.0 by Tarn Weisner Burton 10May2001
 #
-# This code was created by Richard Campbell '99 (ported to Python/PyOpenGL by John Ferguson and Tony Colston 2000)
-# To be honst I stole all of John Ferguson's code and just added the changed stuff for lesson 5. So he did most
-# of the hard work.
+# This code was created by Richard Campbell '99 (ported to Python/PyOpenGL by John Ferguson 2000)
 #
 # The port was based on the PyOpenGL tutorial module: dots.py  
 #
 # If you've found this code useful, please let me know (email John Ferguson at hakuin@voicenet.com).
-# or Tony Colston (tonetheman@hotmail.com)
 #
-# See original source and C based tutorial at http:#nehe.gamedev.net
+# See original source and C based tutorial at http://nehe.gamedev.net
 #
 # Note:
 # -----
@@ -31,7 +28,7 @@ __author__ = 'Tarn Weisner Burton <twburton@users.sourceforge.net>'
 # these APIs, this code is more like a C program using function based programming (which Python
 # is in fact based upon, note the use of closures and lambda) than a "good" OO program.
 #
-# To run this code get and install OpenGL, GLUT, PyOpenGL (see http:#www.python.org), and NumPy.
+# To run this code get and install OpenGL, GLUT, PyOpenGL (see http://www.python.org), and NumPy.
 # Installing PyNumeric means having a C compiler that is configured properly, or so I found.  For 
 # Win32 this assumes VC++, I poked through the setup.py for Numeric, and chased through disutils code
 # and noticed what seemed to be hard coded preferences for VC++ in the case of a Win32 OS.  However,
@@ -91,94 +88,49 @@ def ReSizeGLScene(Width, Height):
 # The main drawing function. 
 def DrawGLScene():
 	global rtri, rquad
+	
+	# Clear The Screen And The Depth Buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+	glLoadIdentity()					# Reset The View 
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	# Clear The Screen And The Depth Buffer
-	glLoadIdentity();					# Reset The View
-	glTranslatef(-1.5,0.0,-6.0);				# Move Left And Into The Screen
+	# Move Left 1.5 units and into the screen 6.0 units.
+	glTranslatef(-1.5, 0.0, -6.0)
 
-	glRotatef(rtri,0.0,1.0,0.0);				# Rotate The Pyramid On It's Y Axis
+	# We have smooth color mode on, this will blend across the vertices.
+	# Draw a triangle rotated on the Y axis. 
+	glRotatef(rtri, 0.0, 1.0, 0.0)      # Rotate
+	glBegin(GL_POLYGON)                 # Start drawing a polygon
+	glColor3f(1.0, 0.0, 0.0)            # Red
+	glVertex3f(0.0, 1.0, 0.0)           # Top
+	glColor3f(0.0, 1.0, 0.0)            # Green
+	glVertex3f(1.0, -1.0, 0.0)          # Bottom Right
+	glColor3f(0.0, 0.0, 1.0)            # Blue
+	glVertex3f(-1.0, -1.0, 0.0)         # Bottom Left
+	glEnd()                             # We are done with the polygon
 
-	glBegin(GL_TRIANGLES);					# Start Drawing The Pyramid
+	# We are "undoing" the rotation so that we may rotate the quad on its own axis.
+	# We also "undo" the prior translate.  This could also have been done using the
+	# matrix stack.
+	glLoadIdentity()
+	
+	# Move Right 1.5 units and into the screen 6.0 units.
+	glTranslatef(1.5, 0.0, -6.0)
 
-	glColor3f(1.0,0.0,0.0);			# Red
-	glVertex3f( 0.0, 1.0, 0.0);		# Top Of Triangle (Front)
-	glColor3f(0.0,1.0,0.0);			# Green
-	glVertex3f(-1.0,-1.0, 1.0);		# Left Of Triangle (Front)
-	glColor3f(0.0,0.0,1.0);			# Blue
-	glVertex3f( 1.0,-1.0, 1.0);
-
-	glColor3f(1.0,0.0,0.0);			# Red
-	glVertex3f( 0.0, 1.0, 0.0);		# Top Of Triangle (Right)
-	glColor3f(0.0,0.0,1.0);			# Blue
-	glVertex3f( 1.0,-1.0, 1.0);		# Left Of Triangle (Right)
-	glColor3f(0.0,1.0,0.0);			# Green
-	glVertex3f( 1.0,-1.0, -1.0);		# Right 
-
-	glColor3f(1.0,0.0,0.0);			# Red
-	glVertex3f( 0.0, 1.0, 0.0);		# Top Of Triangle (Back)
-	glColor3f(0.0,1.0,0.0);			# Green
-	glVertex3f( 1.0,-1.0, -1.0);		# Left Of Triangle (Back)
-	glColor3f(0.0,0.0,1.0);			# Blue
-	glVertex3f(-1.0,-1.0, -1.0);		# Right Of 
-		
-		
-	glColor3f(1.0,0.0,0.0);			# Red
-	glVertex3f( 0.0, 1.0, 0.0);		# Top Of Triangle (Left)
-	glColor3f(0.0,0.0,1.0);			# Blue
-	glVertex3f(-1.0,-1.0,-1.0);		# Left Of Triangle (Left)
-	glColor3f(0.0,1.0,0.0);			# Green
-	glVertex3f(-1.0,-1.0, 1.0);		# Right Of Triangle (Left)
-	glEnd();	
-
-
-	glLoadIdentity();
-	glTranslatef(1.5,0.0,-7.0);		# Move Right And Into The Screen
-	glRotatef(rquad,1.0,1.0,1.0);		# Rotate The Cube On X, Y & Z
-	glBegin(GL_QUADS);			# Start Drawing The Cube
-
-
-	glColor3f(0.0,1.0,0.0);			# Set The Color To Blue
-	glVertex3f( 1.0, 1.0,-1.0);		# Top Right Of The Quad (Top)
-	glVertex3f(-1.0, 1.0,-1.0);		# Top Left Of The Quad (Top)
-	glVertex3f(-1.0, 1.0, 1.0);		# Bottom Left Of The Quad (Top)
-	glVertex3f( 1.0, 1.0, 1.0);		# Bottom Right Of The Quad (Top)
-
-	glColor3f(1.0,0.5,0.0);			# Set The Color To Orange
-	glVertex3f( 1.0,-1.0, 1.0);		# Top Right Of The Quad (Bottom)
-	glVertex3f(-1.0,-1.0, 1.0);		# Top Left Of The Quad (Bottom)
-	glVertex3f(-1.0,-1.0,-1.0);		# Bottom Left Of The Quad (Bottom)
-	glVertex3f( 1.0,-1.0,-1.0);		# Bottom Right Of The Quad (Bottom)
-
-	glColor3f(1.0,0.0,0.0);			# Set The Color To Red
-	glVertex3f( 1.0, 1.0, 1.0);		# Top Right Of The Quad (Front)
-	glVertex3f(-1.0, 1.0, 1.0);		# Top Left Of The Quad (Front)
-	glVertex3f(-1.0,-1.0, 1.0);		# Bottom Left Of The Quad (Front)
-	glVertex3f( 1.0,-1.0, 1.0);		# Bottom Right Of The Quad (Front)
-
-	glColor3f(1.0,1.0,0.0);			# Set The Color To Yellow
-	glVertex3f( 1.0,-1.0,-1.0);		# Bottom Left Of The Quad (Back)
-	glVertex3f(-1.0,-1.0,-1.0);		# Bottom Right Of The Quad (Back)
-	glVertex3f(-1.0, 1.0,-1.0);		# Top Right Of The Quad (Back)
-	glVertex3f( 1.0, 1.0,-1.0);		# Top Left Of The Quad (Back)
-
-	glColor3f(0.0,0.0,1.0);			# Set The Color To Blue
-	glVertex3f(-1.0, 1.0, 1.0);		# Top Right Of The Quad (Left)
-	glVertex3f(-1.0, 1.0,-1.0);		# Top Left Of The Quad (Left)
-	glVertex3f(-1.0,-1.0,-1.0);		# Bottom Left Of The Quad (Left)
-	glVertex3f(-1.0,-1.0, 1.0);		# Bottom Right Of The Quad (Left)
-
-	glColor3f(1.0,0.0,1.0);			# Set The Color To Violet
-	glVertex3f( 1.0, 1.0,-1.0);		# Top Right Of The Quad (Right)
-	glVertex3f( 1.0, 1.0, 1.0);		# Top Left Of The Quad (Right)
-	glVertex3f( 1.0,-1.0, 1.0);		# Bottom Left Of The Quad (Right)
-	glVertex3f( 1.0,-1.0,-1.0);		# Bottom Right Of The Quad (Right)
-	glEnd();				# Done Drawing The Quad
+	# Draw a square (quadrilateral) rotated on the X axis.
+	glRotatef(rquad, 1.0, 0.0, 0.0)		# Rotate 
+	glColor3f(0.3, 0.5, 1.0)            # Bluish shade
+	glBegin(GL_QUADS)                   # Start drawing a 4 sided polygon
+	glVertex3f(-1.0, 1.0, 0.0)          # Top Left
+	glVertex3f(1.0, 1.0, 0.0)           # Top Right
+	glVertex3f(1.0, -1.0, 0.0)          # Bottom Right
+	glVertex3f(-1.0, -1.0, 0.0)         # Bottom Left
+	glEnd()                             # We are done with the polygon
 
 	# What values to use?  Well, if you have a FAST machine and a FAST 3D Card, then
 	# large values make an unpleasant display with flickering and tearing.  I found that
 	# smaller values work better, but this was based on my experience.
-	rtri  = rtri + 0.2                  # Increase The Rotation Variable For The Triangle
-	rquad = rquad - 0.15                 # Decrease The Rotation Variable For The Quad
+	rtri  = rtri + 1.0                  # Increase The Rotation Variable For The Triangle
+	rquad = rquad - 1.0                 # Decrease The Rotation Variable For The Quad
 
 
 	#  since this is double buffered, swap the buffers to display what just got drawn. 

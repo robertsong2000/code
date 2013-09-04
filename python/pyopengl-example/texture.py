@@ -18,7 +18,7 @@ import pygame
 
 pygame.init()
 
-pygame.display.set_mode((800,600), pygame.OPENGL|pygame.DOUBLEBUF)
+pygame.display.set_mode((1024,768), pygame.OPENGL|pygame.DOUBLEBUF)
 
 glClearColor(0.0, 0.0, 0.0, 1.0)
 glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
