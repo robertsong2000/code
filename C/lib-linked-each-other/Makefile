@@ -4,4 +4,4 @@ bar.so: bar.c
 foo.so: foo.c
 	$(CC) -o $@ $< -shared -fPIC
 clean:
-	$(RM) helloworld libfoo.so
+	$(RM) helloworld bar.so foo.so
