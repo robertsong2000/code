@@ -1,5 +1,5 @@
 helloworld: helloworld.c
-	$(CC) -o $@ $<
+	$(CC) -g -o $@ $<
 
 clean:
 	$(RM) helloworld
