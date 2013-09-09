@@ -1,4 +1,5 @@
-obj-m := helloworld.o
+obj-m += helloworld.o
+helloworld-objs := foo.o test.o
 
 INSTALLDIR ?= /tftpboot
 KERNELDIR ?= /home/Kernel
