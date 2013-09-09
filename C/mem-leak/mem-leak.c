@@ -2,7 +2,7 @@
 
 int foo(void)
 {
-	malloc(1024);
+	malloc(1024 * 1024);
 }
 
 int main(void)
