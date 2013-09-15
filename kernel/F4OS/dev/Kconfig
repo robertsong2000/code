@@ -1,0 +1,82 @@
+config HAVE_USART
+    bool
+    prompt "USART Support"
+
+config HAVE_I2C
+    bool
+    prompt "I2C Support"
+
+config HAVE_SPI
+    bool
+    prompt "SPI Support"
+
+config HAVE_LED
+    bool
+    prompt "LED Support"
+
+config HAVE_USBDEV
+    bool
+    prompt "USB Device Support"
+
+choice
+    bool "Standard output device"
+    optional
+
+config STDOUT_USART
+    bool "USART"
+    depends on HAVE_USART
+    ---help---
+        Use USART as standard output
+
+config STDOUT_USB
+    bool "USB"
+    depends on HAVE_USBDEV
+    ---help---
+        Use USB as standard output
+
+endchoice
+
+choice
+    bool "Standard error device"
+    optional
+
+config STDERR_USART
+    bool "USART"
+    depends on HAVE_USART
+    ---help---
+        Use USART as standard error
+
+config STDERR_USB
+    bool "USB"
+    depends on HAVE_USBDEV
+    ---help---
+        Use USB as standard error
+
+endchoice
+
+config SYSTICK_FREQ
+    int
+    prompt "Systick Frequency"
+    default 4000
+    ---help---
+        The frequency at which system ticks (and thus, task switching), should occur.
+
+config SHARED_MEM_SIZE
+    int
+    prompt "Shared memory resource buffer size"
+    default 512
+    ---help---
+        The size of buffer to be allocated for each shared memory
+        resource opened.
+
+menu "I2C Devices"
+    depends on HAVE_I2C
+
+    source "dev/Kconfig.I2C"
+endmenu
+
+menu "SPI Devices"
+    depends on HAVE_SPI
+
+    source "dev/Kconfig.SPI"
+endmenu
