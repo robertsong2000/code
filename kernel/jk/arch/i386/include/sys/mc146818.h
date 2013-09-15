@@ -1,0 +1,25 @@
+#ifndef __MOTOROLA_146818_H
+#define __MOTOROLA_146818_H
+
+
+/* I/O port addresses */
+#define MC146818_ADDR		0x70
+#define MC146818_DATA		0x71
+
+/* Commands */
+#define MC146818_SEC		0x00
+#define MC146818_MIN		0x02
+#define MC146818_HOUR		0x04
+#define MC146818_WDAY		0x06
+#define MC146818_MDAY		0x07
+#define MC146818_MON		0x08
+#define MC146818_YEAR		0x09
+#define MC146818_FDTYPE		0x10
+#define MC146818_HDTYPE		0x12
+#define MC146818_HDEXT0		0x19
+#define MC146818_HDEXT1		0x1a
+#define MC146818_HDTYPE48	0x20
+#define MC146818_HDTYPE49	0x35
+
+
+#endif

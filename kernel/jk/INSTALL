@@ -1,0 +1,9 @@
+INSTALL:
+
+To build an executable JK kernel after extracting the source code, you 
+just cd the directory you extracted and type "make".  The result is  
+files, kernel.elf and module.elf, in boot/ directory.  You can then build 
+the kernel into an executable image that can be put onto a floppy disk.  
+As root permission, you could cd boot/ and "make install". Then, JK is 
+about to work from floppy.
+

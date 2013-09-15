@@ -1,0 +1,31 @@
+ARCH=i386
+
+INC =	-I$(ROOTDIR)/include \
+	-I$(ROOTDIR)/arch/$(ARCH)/include \
+	-I$(ROOTDIR)/include/cstd
+	
+LIBDIR = $(ROOTDIR)/lib
+
+MAKE = make
+CC = gcc
+AR = ar -r
+RANLIB = ranlib
+LD = ld
+SIZE = size
+RM = rm -f
+STRIP = strip
+
+WARNINGS = -Wall -Wstrict-prototypes -Wshadow
+CFLAGS = -c -O2 -g $(WARNINGS)
+LD_FLAGS = -nostartfiles -nostdlib -static
+ELF_LINKER_FLAGS = -Wl,-Ttext,0x00100000
+
+.S.o:
+	$(CC) $(CFLAGS) -nostdinc -I. -I- $(INC) -o $@ $<
+
+.c.o:
+	$(CC) $(CFLAGS) -nostdinc -I. -I- $(INC) -o $@ $<
+
+%.elf:
+	$(CC) $(LD_FLAGS) $(ELF_LINKER_FLAGS) -o $@ $^ -lgcc
+

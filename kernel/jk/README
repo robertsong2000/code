@@ -1,0 +1,47 @@
+		JK (Just the Kernel)
+
+Copyright (C) 2001 by Jimchyun Huang and Robert Fitzsimons
+
+JK is distributed under terms described in the GNU General Public License.
+
+JK (Just the Kernel) is derived from RJK, a kernel for The JOS Project 
+(http://www.jos.org/), with more extensibility and well portibility 
+targeted to be a light-weight kernel, self-contained, including the JVM 
+image and any needed modules as an implementation of all the required 
+functions of the Kernel Interface.
+ 
+Currently, JK only runs under x86 processors and was built under Linux 
+systems. Also, JK uses GRUB as it's boot loader, allowing it to load the
+kernel and modules from ext2 or fat formated hard or floppy disks. 
+
+The kernel has support for the following features:
+
+	* Atomic Operations
+	* IO Ports
+	* Threads
+	* Interrupts
+	* Virtual Memory
+	* Linear Memory
+	* Loading Modules
+	* Getting/Setting Time
+	* Timers
+	* Spinlock's
+	* Mutex's
+	* Printing Debug Messages
+
+Authors:
+	Jimchyun Huang <jimchyun@ccns.ncku.edu.tw>
+
+ChangeLog:
+
+	. First release jk-0.0.0	Oct 11, 2001
+	
+History
+
+JK was started by Jimchyun Huang <jimchyun@ccns.ncku.edu.tw>.
+
+The ancestors of JK are listed below.
+
+RJK (Robert's JOS Kernel)	Version: 2001-05-13
+Copyright (C) 2001		Robert Fitzsimons <robfitz@273k.net>
+
