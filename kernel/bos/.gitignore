@@ -1,0 +1,11 @@
+.DS_Store
+*.o
+*.swp
+*~
+*.pyc
+*.elf
+*.map
+tags
+*.so
+*.BIN
+*.img
