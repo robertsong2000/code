@@ -3,6 +3,7 @@ Python usage memo
 
 robertsong.japan@gmail.com
 ======================================================================
+
 [Contents]
   1. Overview
   2. Tips
@@ -18,6 +19,11 @@ It's a memo of my python study.
 $ python
 >>> import time
 >>> help(time.ctime)
+
+2.2. python coding style
+------------------------
+>>> import this
+
 
 3. Change log
 =============

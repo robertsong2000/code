@@ -1,0 +1,73 @@
+======================================================================
+TODOs
+
+robertsong.japan@gmail.com
+======================================================================
+
+[Contents]
+  1. Overview
+  2. List
+    2.1. Kernel
+    2.2. Compiler
+    2.3. Tracer
+    2.4. C Library
+    2.5. Editor
+    2.6. Network
+    2.7. Emulator
+    2.8. Training & Event
+
+1. Overview
+===========
+It's a memo of TODO list as a toys for myself.
+
+
+2. List
+=======
+
+2.1. Kernel
+-----------
+Linux
+RealTime Kernel
+Assembly Kernel
+Micro Kernel / hypervisor
+
+2.2. Compiler
+-------------
+- Design a language and a compiler / debugger.
+- Language study
+  - python / javascript
+- Study LLVM
+
+2.3. Tracer
+-----------
+- Add a userspace tracer.
+- Study valgrind and write a plugin.
+
+2.4. C Library
+--------------
+- A simple library
+
+2.5. Editor
+-----------
+- vim
+  - Some plugin
+- a simpler editor
+
+2.6. Network
+------------
+Write a browser
+- Learn WebKit
+
+2.7. Emulator
+-------------
+A example about how to add a QEMU device.
+
+2.8. Training & Event
+---------------------
+Some training doc
+Collect Event and attend some events
+
+
+3. Change log
+=============
+2013/09/18      Intial version
