@@ -1,3 +1,3 @@
 #!/bin/sh
 
-qemu -fda orzmicro.img
+qemu-system-i386 -fda orzmicro.img
