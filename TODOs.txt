@@ -1,0 +1,56 @@
+======================================================================
+TODOs
+
+robertsong.japan@gmail.com
+======================================================================
+
+[Contents]
+  1. Overview
+  2. List
+
+1. Overview
+===========
+It's a memo of TODO list as a toys for myself.
+
+
+2. List
+=======
+
+2.1. Kernel
+-----------
+Linux
+  - /proc
+
+RealTime Kernel
+Assembly Kernel
+Micro Kernel / hypervisor
+
+2.2. Compiler
+-------------
+- Design a language and a compiler / debugger.
+
+2.3. Tracer
+-----------
+- Add a userspace tracer.
+
+2.4. C Library
+--------------
+- A simple library
+
+2.5. Editor
+-----------
+- vim
+  - Some plugin
+- a simpler editor
+
+2.6. Net
+--------
+
+2.7. Python study
+-----------------
+
+
+3. Change log
+=============
+
+2013/09/18      Intial version
