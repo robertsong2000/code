@@ -30,6 +30,7 @@ Linux
 RealTime Kernel
 Assembly Kernel
 Micro Kernel / hypervisor
+  - KVM
 
 2.2. Compiler
 -------------
