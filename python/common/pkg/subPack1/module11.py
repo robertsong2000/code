@@ -1,3 +1,3 @@
 def funcA():
-    print "funcA in mdoule11"
+    print "funcA in module11"
     return
