@@ -6,4 +6,4 @@ qemu-system-arm \
 	-M versatilepb \
 	-cpu arm926 \
 	-nographic \
-	-kernel kernel.elf
+	-kernel kernel.elf "$@"
