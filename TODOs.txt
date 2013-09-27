@@ -68,6 +68,9 @@ A example about how to add a QEMU device.
 Some training doc
 Collect Event and attend some events
 
+2.9. Daily work
+---------------
+Post at least one blog one day.
 
 3. Change log
 =============
