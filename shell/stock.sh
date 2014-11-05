@@ -1,7 +1,34 @@
 #!/bin/sh
+
+IS_TOP=0
 rate="0.0538477535"
+web_info=""
 #input_file=$1
-echo "日本股市市值100名"
+
+function usage()
+{
+   cat << END >&2
+Usage: $progname [options]
+Options:
+    {-t|--top}
+        Show all captical top 100.
+    {-b|--bank}
+        Show bank top 100.
+    {-s|--steal}
+        Show steal top 100.
+    {-S|--stock}
+        Show stock top 100.
+    {-m|--medicine}
+        Show medicine top 100.
+    {-f|--food}
+        Show food top 100.
+    {-c|--cmd}
+        Show user defined top 100.
+    {-h|--help}
+        Show the help usage.
+END
+
+}
 
 function output()
 {
@@ -26,5 +53,73 @@ function show()
     output
 }
 
-show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx"
-show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx?Babu=11&PageNo=2&Gyosyu=00"
+function show_top()
+{
+    echo "日本股市市值100名"
+    show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx"
+    show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx?Babu=11&PageNo=2&Gyosyu=00"
+}
+
+function show_bank()
+{
+    echo "日本银行排名"
+    show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx?Babu=11&PageNo=&Gyosyu=47"
+    show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx?Babu=11&PageNo=2&Gyosyu=47"
+}
+
+function show_steal()
+{
+    echo "日本钢铁业排名"
+    show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx?Babu=11&PageNo=&Gyosyu=17"
+}
+
+function show_stock()
+{
+    echo "日本证券业排名"
+    show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx?Babu=11&PageNo=&Gyosyu=49"
+}
+
+function show_medicine()
+{
+    echo "日本医药业排名"
+    show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx?Babu=11&PageNo=&Gyosyu=09"
+}
+
+function show_food()
+{
+    echo "日本饮食业排名"
+    show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx?Babu=11&PageNo=&Gyosyu=01"
+}
+
+function show_user()
+{
+    show "$1"
+}
+
+while [ $# != 0 ]; do
+    case $1 in
+    -h | --help)        cmd_mode="help";;
+    -t | --top)         cmd_mode="top";;
+    -b | --bank)        cmd_mode="bank";;
+    -s | --steal)       cmd_mode="steal";;
+    -S | --stock)       cmd_mode="stock";;
+    -m | --medicine)    cmd_mode="medicine";;
+    -f | --food)        cmd_mode="food";;
+    -c | --cmd)         cmd_mode="user"; web_info=$2; shift;;
+              *)        ARGUMENT="$ARGUMENT $1";;
+
+    esac
+    shift
+done
+
+case "$cmd_mode" in
+    help)          usage ;;
+    top)           show_top;;
+    bank)          show_bank;;
+    steal)         show_steal;;
+    stock)         show_stock;;
+    medicine)      show_medicine;;
+    food)          show_food;;
+    user)          show_user $web_info;;
+    *)             usage ;;
+esac
