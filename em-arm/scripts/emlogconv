@@ -1,0 +1,901 @@
+#!/bin/env python
+
+# With non GPL files, use following license
+
+# Copyright 2008,2009  Sony Corporation
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions, and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+
+# THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+
+# Otherwise with GPL files, use following license
+
+#  Copyright 2008,2009 Sony Corporation.
+
+#  This program is free software; you can redistribute  it and/or modify it
+#  under  the terms of  the GNU General  Public License as published by the
+#  Free Software Foundation;  version 2 of the  License.
+
+#  THIS  SOFTWARE  IS PROVIDED   ``AS  IS'' AND   ANY  EXPRESS OR IMPLIED
+#  WARRANTIES,   INCLUDING, BUT NOT  LIMITED  TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
+#  NO  EVENT  SHALL   THE AUTHOR  BE    LIABLE FOR ANY   DIRECT, INDIRECT,
+#  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+#  NOT LIMITED   TO, PROCUREMENT OF  SUBSTITUTE GOODS  OR SERVICES; LOSS OF
+#  USE, DATA,  OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+#  ANY THEORY OF LIABILITY, WHETHER IN  CONTRACT, STRICT LIABILITY, OR TORT
+#  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+#  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#  You should have received a copy of the  GNU General Public License along
+#  with this program; if not, write  to the Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+import signal, sys, os, shutil, re, bisect, glob
+from itertools import *
+from optparse import OptionParser
+import pprint
+
+emlogconv_version = 'v1.1'
+######################################################################
+# constants
+pat_hex32 = r'(?:0x)?[0-9a-fA-F]{8}'
+cpat_hex32 = re.compile(pat_hex32)
+
+pat_em_header = r'\[(register dump|stack dump|call stack[^]]+|system maps|disassemble|current task|Exception Syndrome|modules|proc maps)\]\s*$'
+
+# for ignoring PRINTK_TIME's output at the beginning of line,
+# such like: "[ 1987.714784] cp0 epc:      0x2aab0680"
+pat_em_line_head = r'^(?:\[[ 0-9.]+\] )?'
+
+######################################################################
+# globals
+pp = pprint.PrettyPrinter()
+
+options = None
+guess_arch = None
+guess_readelf = None
+section = ""
+
+######################################################################
+# main
+def main():
+    global options, pat_em_line_head, cpat_em_header
+    (parser, options, args) = do_option()
+    if options.flex_match:
+        pat_em_line_head = ''
+    cpat_em_header = re.compile(pat_em_line_head + pat_em_header)
+    infile = None
+    if args:
+        infile_path = args.pop(-1)
+        if infile_path == '-':
+            infile = sys.stdin
+        else:
+            infile = open(infile_path)
+    name_list = gen_name_list(args)
+    module_map = ModuleMap()
+    if infile:
+        in_lines = read_em_log(infile, name_list, module_map)
+    if options.guess_arch:
+        print_guess_arch()
+        sys.exit(0)
+    if options.guess_readelf:
+        print get_readelf()
+        sys.exit(0)
+    if options.print_name_map:
+        print_name_map(name_list)
+    if options.modules:
+        modules_file = open(options.modules)
+        read_modules(modules_file, module_map)
+    if options.system_map:
+        kernel_symbols_file = open(options.system_map)
+        read_kernel_symbols(kernel_symbols_file, module_map)
+    if options.print_module_map:
+        print str(module_map)
+    if (not options.conv) and (options.print_name_map
+                               or options.print_module_map):
+        sys.exit(0)
+    if not infile:
+        die("no input file")
+    name_map = name_list_to_name_map(name_list)
+    conv_lines(in_lines, True, module_map, name_map)
+    return
+
+######################################################################
+# options
+def do_option(in_args = None):
+    if in_args == None:
+        in_args = sys.argv[1:]
+    usage = '''usage: %prog [options] [ELF...] EM_LOG'''
+    parser = OptionParser(usage = usage, version = emlogconv_version)
+    parser.set_defaults(em = True, use_addr2line = True,
+                        use_cppfilt = True,
+                        build_src_root=os.getcwd(),
+                        show_src=False,
+                        check_addrlist_hash = True)
+    parser.add_option("--find-root", dest="find_root",
+                                   action="append", metavar="DIR",
+                                   help="search DIR for elf files")
+    parser.add_option("--name-map", dest="name_map",
+                                   metavar="FILE",
+                                   help="use specified name->elf table")
+    parser.add_option("--modules", dest="modules",
+                                   metavar="FILE",
+                                   help="read module map from saved /proc/modules")
+    parser.add_option("--system-map", dest="system_map",
+                                   metavar="FILE",
+                                   help="read kernel's System.map from FILE")
+    parser.add_option("--readelf", dest="readelf",
+                                   help="use specified readelf "
+                      "(default: find ARCH*readelf in PATH, "
+                      "where ARCH is guessed from input)")
+    parser.add_option("--use-addr2line", dest="use_addr2line",
+                                   action="store_true",
+                                   help="show line number "
+                                        "using addr2line (default)")
+    parser.add_option("--no-use-addr2line", dest="use_addr2line",
+                                   action="store_false",
+                                   help="disable using addr2line")
+    parser.add_option("--addr2line", dest="addr2line",
+                                   help="use specified addr2line "
+                      "(default: converted from readelf name)")
+    parser.add_option("--check-addrlist-hash", dest="check_addrlist_hash",
+                                   action="store_true",
+                      help="check hash added by addsymlist (default)")
+    parser.add_option("--no-check-addrlist-hash", dest="check_addrlist_hash",
+                                   action="store_false",
+                      help="disable checking hash added by addsymlist")
+    parser.add_option("--addsymlist", dest="addsymlist",
+                                   help="name of addsymlist "
+                      "(default: converted from name of readelf)")
+    parser.add_option("--use-cppfilt", dest="use_cppfilt",
+                                   action="store_true",
+                                   help="show line number "
+                                        "using cppfilt (default)")
+    parser.add_option("--no-use-cppfilt", dest="use_cppfilt",
+                                   action="store_false",
+                                   help="disable using cppfilt")
+    parser.add_option("--cppfilt", dest="cppfilt",
+                                   help="name of c++filt "
+                      "(default: converted from name of readelf)")
+    parser.add_option("--print-name-map", dest="print_name_map",
+                                   action="store_true",
+                                   help="print name->elf table")
+    parser.add_option("--print-module-map", dest="print_module_map",
+                                   action="store_true",
+                                   help="print addr->module table")
+    parser.add_option("--conv", dest="conv",
+                                   action="store_true",
+                                   help="Do conversion even if --print-*"
+                                        "is specified")
+    parser.add_option("--guess-arch", dest="guess_arch",
+                                   action="store_true",
+                                   help="print result of guessing architecture")
+    parser.add_option("--guess-readelf", dest="guess_readelf",
+                                   action="store_true",
+                                   help="print result of guessing readelf path")
+    parser.add_option("--verbose", dest="verbose",
+                                   action="store_true",
+                                   help="enable debug messages")
+    parser.add_option("--show-src", dest="show_src",
+                                   action="store_true",
+                                   help="display source line")
+    parser.add_option("--no-show-src", dest="show_src",
+                                   action="store_false",
+                                   help="disable displaying source line (default)")
+    parser.add_option("--build-src-root", dest="build_src_root",
+                                   metavar="DIR",
+                                   help="Prefix of source directory embeded in "
+                                        "binaries (default: current directory)")
+    parser.add_option("--current-src-root", dest="current_src_root",
+                                   metavar="DIR",
+                                   help="replacement of directory specified by "
+                                        "--build-src-root (default: no replace)")
+    parser.add_option("--flex-match", dest="flex_match",
+                                      action="store_true",
+                                      help="use loose regexp to allow unexpected"
+                                           " chars at line beginning")
+    parser.add_option("--no-flex-match", dest="flex_match",
+                                      action="store_false",
+                                      help="disable --flex-match (default)")
+    parser.add_option("--callstack-only", dest="callstack_only",
+                                      action="store_true",
+                                      help="convert callstack only")
+    parser.add_option("--no-callstack-only", dest="callstack_only",
+                                      action="store_false",
+                                      help="convert whole input (default)")
+    parser.add_option("--proc-mode", dest="proc_mode",
+                                      action="store_true",
+                                      help="In callstack, remove input line")
+    parser.add_option("--no-proc-mode", dest="proc_mode",
+                                      action="store_false",
+                                      help="disable --proc-mode (default)")
+    #parser.add_option("--em", dest="em",
+    #                          action="store_true",
+    #                          help="input is em's output (default)")
+    #parser.add_option("--no-em", dest="em",
+    #                             action="store_false",
+    #                             help="input is not em's output.  need --map")
+    (options, args) = parser.parse_args(in_args)
+    if not options.current_src_root:
+        options.current_src_root = options.build_src_root
+    return (parser, options, args)
+
+######################################################################
+# classes
+class Symbol:
+    def __init__(self, start, name):
+        self.start = normalize_num(start)
+        self.name = name
+    def __repr__(self):
+        """
+        >>> repr(Symbol(123, 'abc'))
+        "Symbol(123L, 'abc')"
+        """
+        return "Symbol" + repr((self.start, self.name))
+    def __cmp__(self, other):
+        """
+        >>> Symbol(1, '') <  Symbol(2, '')
+        True
+        """
+        return cmp(self.start, other.start)
+
+# range of addr, where an ELF (or kernel) is mapped to.
+# self.syms needs to keep sorted
+class Range:
+    def __init__(self, start, end, offset, name, syms):
+        self.start = normalize_num(start)
+        self.end = normalize_num(end)
+        self.offset = normalize_num(offset) # currently not used
+        self.name = name
+        self.syms = syms        # caches sorted list of symbols
+        self.virt_base = 0      # vaddr of first PT_LOAD segment
+        self.has_debug = None   # has debug section for addr2line
+        self.addrlist_hash = None # hash added by addsymlist
+        self.host_path = None
+
+    def __cmp__(self, other):
+        """
+        >>> Range(1, 2, 0, '', []) <  Range(2, 3, 0, '', [])
+        True
+        """
+        return cmp(self.start, other.start)
+
+    def search_sym(self, addr):
+        if not self.syms:
+            return None
+        idx = bisect.bisect_right(self.syms, Symbol(addr, ''))
+        if idx == 0:
+            return None
+        return self.syms[idx - 1]
+
+class ModuleMap:
+    def __init__(self):
+        self.ranges = [] # Sorted list of Ranges
+        self.name2ahash = {}
+
+    def add_range(self, range):
+        # XXX: overwrap check omited
+        bisect.insort_right(self.ranges, range)
+
+    def __str__(self):
+        ans = ''
+        for range in self.ranges:
+            ans += "0x%08x-0x%08x: 0x%08x: %s\n" % (range.start, range.end,
+                                                    range.offset, range.name)
+        return ans.rstrip()
+
+    def search(self, addr, name_map):
+        range = self.search_range(addr)
+        if not range:
+            return None
+        if range.syms == None:
+            read_elf(range, name_map)
+        return range
+
+    def search_range(self, addr):
+        addr = normalize_num(addr)
+        target = Range(addr, 0, 0, 0, None)
+        idx = bisect.bisect_right(self.ranges, target)
+        if idx == 0:
+            return None
+        cand = self.ranges[idx - 1]
+        if cand.end <= addr:
+            return None
+        return cand
+
+######################################################################
+# subs
+
+# In these sections, the leftmost hex is ignored
+def is_em_skip_section(section):
+    return (section == "system maps"
+            or section == "disassemble"
+            or section == "stack dump")
+
+def is_callstack(section):
+    return section.startswith("call stack")
+
+# --------------------------------------------------------------------
+# *converting lines
+def conv_line(line, em, module_map, name_map):
+    # skip leftmost addr in [system map], [disassemble], [stack dump]
+    pat_em_skip = re.compile(pat_em_line_head + r'(%s-%s|%s)'
+                             % (pat_hex32, pat_hex32, pat_hex32))
+    global section
+    if not (options.proc_mode
+            and is_callstack(section)
+            and cpat_hex32.search(line)):
+        print line,
+    if em:
+        m = cpat_em_header.search(line)
+        if m:
+            section = m.group(1)
+        match = pat_em_skip.search(line)
+        if is_em_skip_section(section) and match:
+            line = line[match.end():]
+        if options.callstack_only and not is_callstack(section):
+            return
+    m = re.search(r'adj:(-?\d+)', line)
+    if m:
+        adj = int(m.group(1))
+    else:
+        adj = 0
+    while True:
+        match = cpat_hex32.search(line)
+        if not match:
+            break
+        hex = match.group(0)
+        addr = normalize_num(hex)
+        adj_addr = addr - adj
+        line = line[match.end():]
+        range = module_map.search(addr, name_map)
+        if not range:
+            continue
+        sym = range.search_sym(adj_addr)
+        a2l_ans = None
+        if options.use_addr2line and range.has_debug:
+            elf = name_map[range.name]
+            a2l_ans = addr2line(adj_addr - range.start + range.virt_base, elf)
+        if not sym and (not a2l_ans or a2l_ans == "??, ??:0"):
+            if options.proc_mode and is_callstack(section):
+                print "   +0x%08x: (unknown)\n" % addr,
+            continue
+        print "   +0x%08x:" % addr,
+        if sym:
+            print "%s+0x%x :" % (sym.name, adj_addr - sym.start),
+        else:
+            print "(symbol not found) :",
+        print "%s+0x%x" % (range.name, adj_addr - range.start)
+        if options.check_addrlist_hash:
+            check_addrlist_hash(range, module_map)
+        if a2l_ans:
+            print "   ++" + a2l_ans
+
+def conv_lines(lines, em, module_map, name_map):
+    for line in lines:
+        conv_line(line, em, module_map, name_map),
+
+def check_addrlist_hash(range, module_map):
+    if range.name not in module_map.name2ahash:
+        return
+    target_hash = module_map.name2ahash[range.name]
+    if not range.addrlist_hash:
+        print ("   ++(addrlist hash unmatch: no hash in host file: %s)"
+               % range.host_path)
+        return
+    if range.addrlist_hash != target_hash:
+        print ("   ++(addrlist hash unmatch: target:%s, host:%s (%s))"
+               % (target_hash, range.addrlist_hash, range.host_path))
+        return
+    if options.verbose:
+        print "   ++(addrlist hash ok)"
+
+# ----------------------------------------------------------------------
+# *parsing em log
+
+def delimit_lines(pattern, lines):
+    """insert None before pattern
+    >>> pat = re.compile('=')
+    >>> list(delimit_lines(pat, ['a', '=', 'b']))
+    ['a', None, '=', 'b']
+    >>> list(delimit_lines(pat, ['=', '=']))
+    [None, '=', None, '=']
+    """
+    for line in lines:
+        if pattern.search(line):
+            yield None
+        yield line
+
+def group_lines_by_None(lines):
+    """generate list of list.  each sublist is originally separated by None.
+    >>> list(group_lines_by_None(['a', 'b', None, 'c', 'd']))
+    [['a', 'b'], ['c', 'd']]
+    >>> list(group_lines_by_None(['a', None, None, 'b']))
+    [['a'], ['b']]
+    >>> list(group_lines_by_None([None]))
+    []
+    """
+    itr = iter(lines)
+    for line in itr:
+        if line:
+            group = [line]
+            for line in itr:
+                if not line:
+                    break
+                group.append(line)
+            yield group
+
+def group_lines(pattern, lines):
+    """generate list of list.  each sublist is a line group started by pattern
+    in original list.
+    >>> pat = re.compile('=')
+    >>> list(group_lines(pat, ['a', '=', 'b']))
+    [['a'], ['=', 'b']]
+    >>> list(group_lines(pat, []))
+    []
+    """
+    return group_lines_by_None(delimit_lines(pattern, lines))
+
+def find_section(name, sections):
+    for sec in sections:
+        if sec and re.search(name, sec[0]):
+            return sec
+    return None
+
+def read_em_log_user_map(lines, module_map):
+    pat_user_map_line = re.compile(pat_em_line_head + "(%s)-(%s) r-x (%s)\s+(\S+)"
+                                   % (pat_hex32, pat_hex32, pat_hex32))
+    for line in lines:
+        match = pat_user_map_line.search(line)
+        if match:
+            (start, end, offset, name) = match.groups()
+            module_map.add_range(Range(start, end, offset, name, None))
+
+def read_em_log_proc_map(lines, module_map):
+    pat_proc_map_line = re.compile(pat_em_line_head
+                                   + "(%s)-(%s) r-x. (%s)\s\S+\s\S+\s+(\S+)"
+                                   % (pat_hex32, pat_hex32, pat_hex32))
+    for line in lines:
+        match = pat_proc_map_line.search(line)
+        if match:
+            (start, end, offset, name) = match.groups()
+            module_map.add_range(Range(start, end, offset,
+                                       os.path.basename(name), None))
+
+def read_em_log_modules(lines, module_map):
+    pat_em_log_modules = re.compile(pat_em_line_head + r'(%s)\s+(\d+)\s+(\S+)'
+                                    % (pat_hex32,))
+    for line in lines:
+        match = pat_em_log_modules.search(line)
+        if match:
+            (start, size, name) = match.groups()
+            module_map.add_range(Range(start, normalize_num(start) + long(size),
+                                       0, name, None))
+
+pat_em_ustack_hash = re.compile(r'\((\S+)\s+hash:(\S+)\)')
+def read_em_log_ustack_hash(lines, module_map):
+    for line in lines:
+        match = pat_em_ustack_hash.search(line)
+        if match:
+            (name, hash) = match.groups()
+            module_map.name2ahash[name] = hash
+
+def read_one_em_log(sections, name_list, module_map):
+    sec_user_map = find_section('system maps', sections)
+    if sec_user_map:
+        read_em_log_user_map(sec_user_map, module_map)
+    sec_proc_map = find_section('proc maps', sections)
+    if sec_proc_map:
+        read_em_log_proc_map(sec_proc_map, module_map)
+    sec_modules = find_section('modules', sections)
+    if sec_modules:
+        read_em_log_modules(sec_modules, module_map)
+    sec_ustack = find_section('call stack \(ustack\)', sections)
+    if sec_ustack and options.check_addrlist_hash:
+        read_em_log_ustack_hash(sec_ustack, module_map)
+    do_guess_arch(sections)
+
+def read_em_log(lines, name_list, module_map):
+    pat_separator = re.compile(pat_em_line_head + '=' * 10)
+    # split blocks separated by ==========
+    blocks = list(group_lines(pat_separator, lines))
+
+    # find last block containing valid section
+    ans = None
+    blocks.reverse()
+    for block in blocks:
+        sections = list(group_lines(cpat_em_header, block))
+        if find_section('register dump', sections):
+            if ans:
+                warn("input contains logs of more than one invocations.  "
+                     "using the last one.")
+                break
+            else:
+                read_one_em_log(sections, name_list, module_map)
+                ans = block
+    if not ans:
+        die("empty input")
+    return ans
+
+# ----------------------------------------------------------------------
+# *creating name map
+
+def find_root(root):
+    if not os.path.isdir(root):
+        die("not directory: " + root)
+    ans = []
+    for dir, subdirs, files in os.walk(root):
+        for file in files:
+            file_path = os.path.join(dir, file)
+            if is_elf(file_path):
+                ans.append(path_to_pair(file_path))
+    return ans
+
+def gen_name_list(args):
+    name_list = []
+    if options.find_root:
+        for dir in options.find_root:
+            name_list += find_root(dir)
+    if args:
+        name_list += name_list_from_args(args)
+    if options.name_map:
+        name_list += read_name_map(options.name_map)
+    return name_list
+
+def exclude_comment(seq):
+    for line in seq:
+        line = line.strip()
+        line = re.sub('#.*', '', line) # remove comment
+        if line:
+            yield line
+
+def read_name_map(path):
+    ans = []
+    file = open(path)
+    for line in exclude_comment(file):
+        pair = line.split()
+        if len(pair) != 2:
+            die("--name-map format error: " + line.strip())
+        ans.append(tuple(pair))
+    file.close()
+    return ans
+
+def print_name_map(name_list):
+    for pair in name_list:
+        print "%s %s" % pair
+
+def name_list_from_args(args):
+    """
+    >>> name_list_from_args(['/bin/ls', '/bin/sh'])
+    [('ls', '/bin/ls'), ('sh', '/bin/sh')]
+    """
+    return [ path_to_pair(path) for path in args if is_elf(path) ]
+
+def path_to_pair(path):
+    """
+    >>> path_to_pair('/dir/file')
+    ('file', '/dir/file')
+    >>> path_to_pair('/dir/file.ko')
+    ('file', '/dir/file.ko')
+    """
+    base = os.path.basename(path)
+    base = re.sub(r'\.ko$', '', base)
+    return (base, path)
+
+def name_list_to_name_map(ls):
+    ans = {}
+    for (name, path) in ls:
+        if name in ans:
+            vwarn("%s multiply found (%s, %s)" %(name, ans[name], path))
+        ans[name] = path
+    return ans
+
+# ----------------------------------------------------------------------
+# *reading misc inputs
+pat_kernel_symbols_line = re.compile("^(%s)\s+\S+\s+(\S+)"
+                                     % (pat_hex32,))
+def read_kernel_symbols(lines, module_map):
+    syms = []
+    for line in lines:
+        match = pat_kernel_symbols_line.search(line)
+        if match:
+            (start, name) = match.groups()
+            syms.append(Symbol(start, name))
+    if not syms:
+        die("empty kernel symbols")
+    module_map.add_range(Range(syms[0].start, syms[-1].start, 0,
+                               '<kernel>', syms))
+
+pat_modules = re.compile(r'^(\S+)\s+(\d+)\s+.*(%s)$'
+                         % (pat_hex32,))
+def read_modules(lines, module_map):
+    for line in lines:
+        match = pat_modules.search(line)
+        if match:
+            (name, size, start) = match.groups()
+            module_map.add_range(Range(start, normalize_num(start) + long(size),
+                                       0, name, None))
+
+# ----------------------------------------------------------------------
+# *reading elf
+def is_elf(path):
+    """Return true if path is ELF file
+    >>> is_elf('/bin/ls')
+    True
+    >>> is_elf('/bin/sh') # symlink is dereferenced
+    True
+    >>> is_elf('/etc/rc.local')
+    False
+    """
+    if not os.path.isfile(path):
+        return False
+    if not os.access(path, os.R_OK):
+        return False
+    file = open(path)
+    magic = file.read(4)
+    file.close()
+    return magic == '\x7fELF'
+
+def run_cmd(*words):
+    ans = os.popen2(words)
+    lines = ans[1].readlines()
+    return lines
+
+def filt_cmdline(words):
+    if options.use_cppfilt:
+        qwords = [ re.escape(w) for w in words ]
+        return [ 'sh', '-c', '%s | %s' % (' '.join(qwords),
+                                          re.escape(get_cppfilt()))]
+    else:
+        return words
+
+def run_cmd_filt(*words):
+    ans = os.popen2(filt_cmdline(words))
+    lines = ans[1].readlines()
+    return lines
+
+def read_file_line(path, lineno):
+    if not os.path.exists(path):
+        return None
+    f = open(path)
+    cur = 1
+    for line in f:
+        if cur == lineno:
+            return line
+        cur += 1
+    # File too short
+    return None
+
+def addr2line_raw(addr, elf):
+    return run_cmd_filt(get_addr2line(), "--exe", elf, "-f", "0x%x" % addr)
+
+def addr2line(addr, elf):
+    lines = addr2line_raw(addr, elf)
+    ret = ", ".join([ line.rstrip() for line in lines])
+    if not options.show_src:
+        return ret
+    if len(lines) == 2:
+        (funname, file_num) = lines
+        m = re.match("([^:]+):(\d+)", file_num)
+        if m:
+            path, numstr = m.groups()
+            num = int(numstr)
+            build_src_root = options.build_src_root
+            current_src_root = options.current_src_root
+            if not build_src_root.endswith('/'):
+                build_src_root += '/'
+            if not current_src_root.endswith('/'):
+                current_src_root += '/'
+            path = re.sub('^' + re.escape(build_src_root),
+                          current_src_root, path)
+            src_line = read_file_line(path, num)
+            if src_line:
+                return ("%s, %s:%d\n   %s"
+                        % (funname.rstrip(), path, num, src_line.rstrip()))
+    return ret + "\n   (src not available)"
+
+def read_elf(range, name_map):
+    name = range.name
+    if name not in name_map:
+        vwarn("unknown module: %s" % name)
+        return
+    elf = name_map[name]
+    if not is_elf(elf):
+        vwarn("not elf: %s" % elf)
+        return
+    virt_base = read_elf_virt_base(elf)
+    section_to_num = read_elf_sections(elf)
+    ex_sections = exclude_sections(section_to_num)
+    has_debug = ".debug_line" in section_to_num
+    cmd = filt_cmdline([get_readelf(), '-Ws', elf])
+    symtab_lines = os.popen2(cmd)[1]
+    syms = []
+    for line in symtab_lines:
+        line = line.rstrip()
+        words = line.split(None, 7) # 8th word (C++ sym) contains white spaces
+        if len(words) < 8:
+            continue
+        (num, addr, size, type, bind, vis, section_idx, name) = words[0:8]
+        if type != 'FUNC': # and type != 'OBJECT':
+            continue
+        if section_idx == 'UND' or section_idx == 'ABS':
+            continue
+        if int(section_idx) in ex_sections:
+            continue
+        addr = normalize_num(addr) + range.start - virt_base
+        syms.append(Symbol(addr, name))
+    syms.sort()
+    range.syms = syms
+    range.host_path = elf
+    range.virt_base = virt_base
+    range.has_debug = has_debug
+    if options.check_addrlist_hash and ".snsc_addrlist" in section_to_num:
+        range.addrlist_hash = read_elf_addrlist_hash(elf)
+
+def exclude_sections(section_to_num):
+    """adhoc way to exclude .ko init/exit section, which may overlap
+    main .text section.
+    """
+    ans = []
+    for nam in ('.init.text', '.exit.text'):
+        if nam in section_to_num:
+            ans.append(section_to_num[nam])
+    return ans
+
+pat_elf_section_header_lines = re.compile(r'^\s+\[\s*(\d+)\]\s+(\S+)')
+def read_elf_sections(elf):
+    ans = {}
+    sections_lines = os.popen2([get_readelf(), '-WS', elf])[1]
+    for line in sections_lines:
+        match = pat_elf_section_header_lines.search(line)
+        if match:
+            (num_str, name) = match.groups()
+            ans[name] = int(num_str)
+    return ans
+
+def is_obj(elf):
+    header = read_elf_header(elf)
+    return bool(re.search("Type:\s+REL", header))
+
+pat_elf_phdr = re.compile(r'^\s*LOAD\s+\S+\s+(\S+)')
+def read_elf_virt_base(elf):
+    if is_obj(elf):
+        return 0
+    phdr_lines = read_elf_program_header(elf)
+    for line in phdr_lines:
+        match = pat_elf_phdr.search(line)
+        if match:
+            return normalize_num(match.group(1))
+    warn("no PT_LOAD in program header: %s" % elf)
+    return 0
+
+def read_elf_header(elf):
+    return ''.join(os.popen2([get_readelf(), '-h', elf])[1].readlines())
+
+def read_elf_program_header(elf):
+    return os.popen2([get_readelf(), '-l', elf])[1].readlines()
+
+pat_addrlist_hash = re.compile(r'^hash computed from .text:\s+(\S+)')
+def read_elf_addrlist_hash(elf):
+    lines = run_cmd(get_addsymlist(), '--print-hash', elf)
+    for line in lines:
+        match = pat_addrlist_hash.search(line)
+        if match:
+            return match.group(1)
+    warn("hash not found in result of addsymlist: %s" % elf)
+    return 0
+
+# ----------------------------------------------------------------------
+# guess readelf
+
+def print_guess_arch():
+    if guess_arch:
+        print guess_arch
+    else:
+        print "unknown arch"
+
+def get_readelf():
+    if options.readelf:
+        return options.readelf
+    if not guess_arch:
+        die("--readelf not specified and guessing arch failed")
+    if not guess_readelf:
+        die("--readelf not specified and guessing readelf failed")
+    return guess_readelf
+
+def get_addr2line():
+    if options.addr2line:
+        return options.addr2line
+    return get_readelf().replace("readelf", "addr2line")
+
+def get_addsymlist():
+    if options.addsymlist:
+        return options.addsymlist
+    return get_readelf().replace("readelf", "addsymlist")
+
+def get_cppfilt():
+    if options.cppfilt:
+        return options.cppfilt
+    return get_readelf().replace("readelf", "c++filt")
+
+def do_guess_readelf(arch):
+    for dir in os.environ['PATH'].split(':'):
+        pattern = os.path.join(dir, arch + '*readelf')
+        ans = glob.glob(pattern)
+        if ans:
+            return ans[0]
+    return None
+
+def do_guess_arch(sections):
+    global guess_arch, guess_readelf
+    guess_arch = ""
+    sec_regs = find_section('register dump', sections)
+    if not sec_regs or len(sec_regs) < 3:
+        return
+    if re.search(pat_em_line_head + r' 00:', sec_regs[2]):
+        guess_arch = 'powerpc'
+    elif re.search(pat_em_line_head + r'a1: r0:', sec_regs[1]):
+        guess_arch = 'arm'
+    elif re.search(pat_em_line_head + r' 0: r0:', sec_regs[1]):
+        guess_arch = 'mips'
+    elif re.search(pat_em_line_head + r'eax:', sec_regs[1]):
+        guess_arch = 'i686'
+    guess_readelf = do_guess_readelf(guess_arch)
+
+# ----------------------------------------------------------------------
+# *misc
+
+def normalize_num(val):
+    """cast val to type suitable for ModuleMap
+    >>> normalize_num(123)
+    123L
+    >>> normalize_num(123L)
+    123L
+    >>> normalize_num("123")
+    291L
+    >>> normalize_num("0x123")
+    291L
+    """
+    if isinstance(val, basestring):
+        return long(val, 16)
+    else:
+        return long(val)
+
+def warn(str):
+    print >>sys.stderr, sys.argv[0] + ": warning: " + str
+
+def verbose(str):
+    if options.verbose:
+        print >>sys.stderr, sys.argv[0] + ": " + str
+
+def vwarn(str):
+    if options.verbose:
+        warn(str)
+
+def die(str):
+    sys.exit(sys.argv[0] + ': ' + str)
+
+######################################################################
+# top level
+
+if __name__ == "__main__" and not "doctest" in locals():
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+    main()

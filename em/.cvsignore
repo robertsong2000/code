@@ -1,0 +1,12 @@
+*.cmd
+.config
+.tmp_versions
+autoconf.h
+*.ko
+*.mod.c
+target_module.h
+Module.symvers
+
+# ignore private quilt files
+patches
+.pc
