@@ -50,16 +50,16 @@ function show_top()
     show "广发证券"
     total=$(echo "scale=4; $stock_value * 59.19291464 / 1" | bc -l)
     gf_stock_value="$stock_value"
-    echo "广发证券 市值: $total 亿"
+    echo "广发证券 市值:     $total 亿"
     echo "========================"
     show "亚泰集团"
     total=$(echo "scale=4; $stock_value * 18.947320 / 1" | bc -l)
     yt_stock_value="$stock_value"
-    echo "亚泰集团 市值: $total 亿"
+    echo "亚泰集团 市值:     $total 亿"
     echo "========================"
     show "吉林敖东"
     total=$(echo "scale=4; $stock_value * 8.94438433 / 1" | bc -l)
-    echo "吉林敖东 市值: $total 亿"
+    echo "吉林敖东 市值:     $total 亿"
     gf_total=$(echo "$gf_stock_value * 12.4" | bc -l)
     gf_pert=$(echo "scale=4; $gf_total / $total * 100" | bc -l)
     echo "吉林敖东 包含广发证券市值: $gf_total 亿, 占比: $gf_pert %"
@@ -70,7 +70,7 @@ function show_top()
     echo "========================"
     show "辽宁成大"
     total=$(echo "scale=4; $stock_value * 14.29709816 / 1" | bc -l)
-    echo "辽宁成大 市值: $total 亿"
+    echo "辽宁成大 市值:     $total 亿"
     gf_total=$(echo "$gf_stock_value * 12.5" | bc -l)
     gf_pert=$(echo "scale=4; $gf_total / $total * 100" | bc -l)
     echo "辽宁成大 包含广发证券市值: $gf_total 亿, 占比：$gf_pert %"
