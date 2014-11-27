@@ -5,6 +5,7 @@ total=""
 stock_value=""
 stock_rate=""
 gf_stock_value=""
+gf_pert=""
 
 function usage()
 {
@@ -26,7 +27,7 @@ function output()
     line=$(cat /tmp/stock.txt | tail -1)
     stock_value="$(echo $line | sed -e 's/+.*//')"
     stock_rate="$(echo $line | sed -e 's/.*(//' -e 's/)//')"
-    echo "$1: $stock_value, $stock_rate"
+    echo "$1 当前股价: $stock_value, $stock_rate"
 }
 
 function get_file()
@@ -42,20 +43,26 @@ function show()
 
 function show_top()
 {
+    echo "========================"
     show "广发证券"
     total=$(echo "scale=4; $stock_value * 59.19291464 / 1" | bc -l)
     gf_stock_value="$stock_value"
     echo "广发证券 市值: $total 亿"
+    echo "========================"
     show "吉林敖东"
     total=$(echo "scale=4; $stock_value * 8.94438433 / 1" | bc -l)
     echo "吉林敖东 市值: $total 亿"
     gf_total=$(echo "$gf_stock_value * 12.4" | bc -l)
-    echo "吉林敖东 包含广发证券市值: $gf_total 亿"
+    gf_pert=$(echo "scale=4; $gf_total / $total * 100" | bc -l)
+    echo "吉林敖东 包含广发证券市值: $gf_total 亿, 占比: $gf_pert %"
+    echo "========================"
     show "辽宁成大"
     total=$(echo "scale=4; $stock_value * 14.29709816 / 1" | bc -l)
     echo "辽宁成大 市值: $total 亿"
     gf_total=$(echo "$gf_stock_value * 12.5" | bc -l)
-    echo "辽宁成大 包含广发证券市值: $gf_total 亿"
+    gf_pert=$(echo "scale=4; $gf_total / $total * 100" | bc -l)
+    echo "辽宁成大 包含广发证券市值: $gf_total 亿, 占比：$gf_pert %"
+    echo "========================"
 }
 
 function show_user()
