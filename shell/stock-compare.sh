@@ -7,7 +7,10 @@ stock_rate=""
 gf_stock_value=""
 yt_stock_value=""
 yt_total=""
+ad_total=""
+ad_all_total=""
 yt_pert=""
+ad_pert=""
 gf_pert=""
 
 function usage()
@@ -67,6 +70,13 @@ function show_top()
     yt_total=$(echo "scale=4; $yt_stock_value * 1.29477298 / 1" | bc -l)
     yt_pert=$(echo "scale=4; $yt_total / $total * 100" | bc -l)
     echo "吉林敖东 包含亚泰集团市值: $yt_total 亿, 占比: $yt_pert %"
+
+    ad_total="72.60"
+    ad_pert=$(echo "scale=4; $ad_total / $total * 100" | bc -l)
+    echo "吉林敖东 自身医药部分市值: $ad_total 亿, 占比: $ad_pert %"
+
+    ad_all_total=$(echo "scale=4; ($ad_total + $yt_total + $gf_total) / 1" | bc -l)
+    echo "吉林敖东 自身合理市值: $ad_all_total 亿"
     echo "========================"
     show "辽宁成大"
     total=$(echo "scale=4; $stock_value * 14.29709816 / 1" | bc -l)
