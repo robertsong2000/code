@@ -28,7 +28,7 @@ END
 function output()
 {
     line=$(cat /tmp/stock.txt | tail -1)
-    stock_value="$(echo $line | sed -e 's/+.*//')"
+    stock_value="$(echo $line | sed -e 's/[-+].*//')"
     stock_rate="$(echo $line | sed -e 's/.*(//' -e 's/)//')"
     echo "$1 当前股价: $stock_value, $stock_rate"
 }
