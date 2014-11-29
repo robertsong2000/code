@@ -19,9 +19,7 @@ function usage()
 Usage: $progname [options]
 Options:
     {-t|--top}
-        Show all captical top 100.
-    {-c|--cmd}
-        Show user defined top 100.
+        Show stock comparation.
     {-h|--help}
         Show the help usage.
 END
@@ -87,16 +85,10 @@ function show_top()
     echo "========================"
 }
 
-function show_user()
-{
-    show "$1"
-}
-
 while [ $# != 0 ]; do
     case $1 in
     -h | --help)        cmd_mode="help";;
     -t | --top)         cmd_mode="top";;
-    -c | --cmd)         cmd_mode="user"; web_info=$2; shift;;
               *)        ARGUMENT="$ARGUMENT $1";;
 
     esac
@@ -106,6 +98,5 @@ done
 case "$cmd_mode" in
     help)          usage ;;
     top)           show_top;;
-    user)          show_user $web_info;;
     *)             usage ;;
 esac
