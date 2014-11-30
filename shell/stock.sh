@@ -1,7 +1,7 @@
 #!/bin/sh
 
 IS_TOP=0
-rate="0.0538477535"
+rate="0.0517790009"
 web_info=""
 #input_file=$1
 
@@ -22,6 +22,8 @@ Options:
         Show medicine top 100.
     {-f|--food}
         Show food top 100.
+    {-i|--insurance}
+        Show insurance top 100.
     {-c|--cmd}
         Show user defined top 100.
     {-h|--help}
@@ -91,6 +93,12 @@ function show_food()
     show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx?Babu=11&PageNo=&Gyosyu=01"
 }
 
+function show_insurance()
+{
+    echo "日本保险业排名"
+    show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx?Babu=11&PageNo=&Gyosyu=51"
+}
+
 function show_user()
 {
     show "$1"
@@ -105,6 +113,7 @@ while [ $# != 0 ]; do
     -S | --stock)       cmd_mode="stock";;
     -m | --medicine)    cmd_mode="medicine";;
     -f | --food)        cmd_mode="food";;
+    -i | --insurance)   cmd_mode="insurance";;
     -c | --cmd)         cmd_mode="user"; web_info=$2; shift;;
               *)        ARGUMENT="$ARGUMENT $1";;
 
@@ -120,6 +129,7 @@ case "$cmd_mode" in
     stock)         show_stock;;
     medicine)      show_medicine;;
     food)          show_food;;
+    insurance)     show_insurance;;
     user)          show_user $web_info;;
     *)             usage ;;
 esac
