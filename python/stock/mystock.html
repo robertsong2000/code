@@ -10,7 +10,9 @@
 		var elements=mystocks_zhishu[x].split(",");
 		var per=(elements[3] / elements[2] - 1) * 100;
 		per=per.toFixed(2);
-		document.write(elements[0] + " 当前指数:" + elements[1] + "元，涨幅:" + per + "%<BR>");
+		var mount=elements[9] / 10000 / 10000;
+		mount=mount.toFixed(2);
+		document.write(elements[0] + " 当前指数:" + elements[1] + "元，涨幅:" + per + "%，成交量：" + mount +"亿 <BR>");
 	}
 	
 	var mystocks = new Array()
