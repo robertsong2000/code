@@ -1,0 +1,43 @@
+<script type="text/javascript" src="http://hq.sinajs.cn/list=sz000651,sz000729,sz000100,sz000157,sh601989,sh600600,sh600166,sh600104,sh600085,sz002594,sh600660,sh601238,sh601318,sz002003,sz002372,sh600750,sz002275,sz000895,sh600305,sh603288,sz002582,sz002557,sz000410,sz601872" charset="gb2312"></script>
+<script type="text/javascript">
+	var x
+	var mystocks = new Array()
+	mystocks.push(hq_str_sz000651)
+	mystocks.push(hq_str_sz000729)
+	mystocks.push(hq_str_sz000100)
+	mystocks.push(hq_str_sz000157)
+	mystocks.push(hq_str_sh601989)
+	mystocks.push(hq_str_sh600600)
+	mystocks.push(hq_str_sh600166)
+	mystocks.push(hq_str_sh600104)
+	mystocks.push(hq_str_sh600085)
+	mystocks.push(hq_str_sz002594)
+	mystocks.push(hq_str_sz000729)
+	mystocks.push(hq_str_sh600660)
+	mystocks.push(hq_str_sh601238)
+	mystocks.push(hq_str_sh601318)
+	mystocks.push(hq_str_sz002003)
+	mystocks.push(hq_str_sz002372)
+	mystocks.push(hq_str_sh600750)
+	mystocks.push(hq_str_sz002275)
+	mystocks.push(hq_str_sz000895)
+	mystocks.push(hq_str_sh600305)
+	mystocks.push(hq_str_sh603288)
+	mystocks.push(hq_str_sz002582)
+	mystocks.push(hq_str_sz002557)
+	mystocks.push(hq_str_sz000410)
+	
+	for (x in mystocks)
+	{
+		var elements=mystocks[x].split(",");
+		var per=(elements[3] / elements[2] - 1) * 100;
+		per=per.toFixed(2);
+		if (per > 0) {
+			document.write('<font COLOR="#ff0000">')
+		} else {
+			document.write('<font COLOR="#00ff00">')
+		}
+		document.write(elements[0] + " 当前股价:" + elements[3] + "元, 开盘价：" + elements[1] + "元， 涨幅:" + per + "%<BR>");
+		document.write('</font>')
+	}
+</script>
