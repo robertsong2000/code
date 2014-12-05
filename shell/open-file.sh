@@ -10,7 +10,7 @@ function raopen {
       else
     len="${#x}"
     strlen="${#1}"
-    leftlen="$(($strlen - $len + 1))"
+    leftlen="$(($len - $strlen + 1))"
     subfix="${1:leftlen}"
     if [ "$subfix" == "pdf" ]; then
       mupdf "$@"
@@ -23,4 +23,4 @@ function raopen {
     fi
 }
 
-raopen "test.pdf"
+raopen "testfile.pdf"

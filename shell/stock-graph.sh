@@ -25,6 +25,7 @@ END
 function download_daily()
 {
     cd $FILE_DIR
+    rm $FILE_DIR/*.gif
     cat $MY_STOCK_FILE | while read line ; do
         wget http://image.sinajs.cn/newchart/daily/n/$line.gif
     done
@@ -40,7 +41,7 @@ function add_html()
 {
     rm /tmp/test.html
     cat $MY_STOCK_FILE | while read line ; do
-        echo "<img src=\"file:///tmp/$line.gif\">" >> /tmp/test.html
+        echo "<img src=\"file://$FILE_DIR/$line.gif\">" >> /tmp/test.html
     done
 }
 
