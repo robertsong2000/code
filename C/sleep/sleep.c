@@ -2,6 +2,6 @@
 
 int main(void)
 {
-	sleep(1);
+	sleep(1000);
 	return 0;
 }
