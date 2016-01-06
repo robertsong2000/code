@@ -1,8 +1,9 @@
 #!/bin/sh
 
 IS_TOP=0
-rate="0.0517790009"
+rate="0.0552"
 web_info=""
+index=1
 #input_file=$1
 
 function usage()
@@ -37,9 +38,14 @@ function output()
     cat /tmp/stock.txt |grep "^[0-9]" | awk '{print $3,$5}' | while read line ; do
         if [ -n "$line" ] ; then
             stock_name=$(echo $line | sed -e 's/ .*//');
+            stock_chinese_name=$(grep "^$stock_name " table.txt | awk '{print $2,$3}')
+            ##echo $stock_chinese_name
             stock_value=$(echo $line | sed -e 's/.* //'| sed -e 's/,//g');
             to_chn=$(echo "$stock_value / 1000 / 1000 / 100 * $rate" | bc -l);
-            printf "%-30s\t%.2f亿\n" $stock_name $to_chn ;
+            to_chn=$(printf "%.2f亿\n" $to_chn);
+            echo "<tr><th>$index</th><th>$stock_chinese_name</th><th>$to_chn</th></tr>"
+            index=$((index + 1))
+            #printf "%-30s\t%.2f亿\n" "$stock_chinese_name" $to_chn ;
         fi
     done
 }
@@ -55,11 +61,27 @@ function show()
     output
 }
 
+function show_head()
+{
+    cur_date=$(date +%F)
+    echo "相关资料由 <a href=\"http://robertsong.cn\">http://robertsong.cn</a> 整理, 转载请注明出处"
+    echo "本日($cur_date)汇率: 1日元=$rate人民币"
+}
+
+function show_tail()
+{
+    echo "信息来源: http://www.nikkei.com/"
+}
+
 function show_top()
 {
+    show_head
     echo "日本股市市值100名"
+    echo "<table>"
     show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx"
     show "http://www.nikkei.com/markets/ranking/stock/caphigh.aspx?Babu=11&PageNo=2&Gyosyu=00"
+    echo "</table>"
+    show_tail
 }
 
 function show_bank()
