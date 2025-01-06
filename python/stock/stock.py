@@ -3,13 +3,21 @@
 
 """This script parse stock info"""
 
-import urllib
+import urllib.request
+import urllib.error
 
 def get_price(code):
     '''print one stock info in details'''
     url = "http://hq.sinajs.cn/?list=%s" % code
-    opener = urllib.FancyURLopener()
-    html = opener.open(url).read().decode('gbk')
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2",
+        "Connection": "keep-alive",
+        "Referer": "http://finance.sina.com.cn/"
+    }
+    request = urllib.request.Request(url, headers=headers)
+    html = urllib.request.urlopen(request).read().decode('gbk')
     data = html.split('"')[1].split(',')
     name = "%-6s" % data[0]
     price_current = "%-6s" % float(data[3])
@@ -24,19 +32,5 @@ def get_all_price(code_list):
         get_price(code)
 
 if __name__ == '__main__':
-    STOCK = ['sh600219',       ##南山铝业
-             'sz000002',       ##万  科Ａ
-             'sz000623',       ##吉林敖东
-             'sz000725',       ##京东方Ａ
-             'sh600036',       ##招商银行
-             'sh601166',       ##兴业银行
-             'sh600298',       ##安琪酵母
-             'sh600881',       ##亚泰集团
-             'sz002582',       ##好想你  
-             'sh600750',       ##江中药业
-             'sh601088',       ##中国神华
-             'sz000338',       ##潍柴动力
-             'sz000895',       ##双汇发展
-             'sz000792']       ##盐湖股份
-
+    STOCK = ['sh512050', 'sh512890', 'sh515450', 'sz200429', 'sz200019']
     get_all_price(STOCK)
