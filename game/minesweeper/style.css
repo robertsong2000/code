@@ -1,0 +1,87 @@
+.container {
+    max-width: 600px;
+    margin: 20px auto;
+    text-align: center;
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.board {
+    display: inline-grid;
+    grid-template-columns: repeat(9, 40px);
+    gap: 1px;
+    background-color: #ccc;
+    padding: 1px;
+}
+
+.cell {
+    width: 40px;
+    height: 40px;
+    background-color: #eee;
+    border: 1px solid #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cell.revealed {
+    background-color: #ddd;
+}
+
+.cell.mine {
+    background-color: #ff0000;
+}
+
+.cell:hover:not(.revealed) {
+    background-color: #ddd;
+}
+
+button {
+    padding: 8px 16px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.instructions {
+    margin-top: 30px;
+    text-align: left;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.instructions h2 {
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.instructions h3 {
+    color: #444;
+    margin: 15px 0 10px;
+}
+
+.instructions ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.instructions li {
+    margin: 8px 0;
+    line-height: 1.5;
+}
+
+.instructions p {
+    color: #666;
+    line-height: 1.5;
+} 
