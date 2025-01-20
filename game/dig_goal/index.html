@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>挖金块游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>挖金块小游戏</h1>
+        
+        <div class="game-rules">
+            <h2>游戏规则：</h2>
+            <ul>
+                <li>点击方块进行挖掘，每次点击消耗1次机会</li>
+                <li>金块(黄色) = 10分</li>
+                <li>石头(深灰色) = 0分</li>
+                <li>空地(浅灰色) = 0分</li>
+                <li>总共有30次挖掘机会</li>
+                <li>尽可能获得更高的分数吧！</li>
+            </ul>
+        </div>
+
+        <div class="game-info">
+            <span>分数: <span id="score">0</span></span>
+            <span>剩余步数: <span id="moves">30</span></span>
+        </div>
+        <div id="grid" class="grid"></div>
+        <button id="restartBtn">重新开始</button>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html> 
