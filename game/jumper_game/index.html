@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>小恐龙跳跃游戏</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="background">
+            <pre class="stars star-group-1">
+⋆  ˚    ✦  ⋆   ⋆   ✦    ˚   ⋆   ✧    ⋆  ˚    ✦   ⋆    ✧    ⋆   ✦
+ ˚  ⋆   ✦     ⋆  ˚   ✧    ⋆   ✦    ˚   ✦  ⋆    ⋆   ✧    ⋆  ✧   ˚
+⋆  ˚    ✦  ⋆   ⋆   ✦    ˚   ⋆   ✧    ⋆  ˚    ✦   ⋆    ✧    ⋆   ✦
+ ˚  ⋆   ✦     ⋆  ˚   ✧    ⋆   ✦    ˚   ✦  ⋆    ⋆   ✧    ⋆  ✧   ˚</pre>
+            <pre class="stars star-group-2">
+✧   ✦   ⋆    ˚   ✦  ⋆   ★   ⋆    ✧    ⋆   ✦    ˚   ⋆   ✧    ⋆  ˚
+  ⋆   ✧    ⋆  ✧   ˚   ✦   ★     ⋆   ✧    ⋆   ✦    ˚   ✦  ⋆   ✧
+✧   ✦   ⋆    ˚   ✦  ⋆   ★   ⋆    ✧    ⋆   ✦    ˚   ⋆   ✧    ⋆  ˚
+  ⋆   ✧    ⋆  ✧   ˚   ✦   ★     ⋆   ✧    ⋆   ✦    ˚   ✦  ⋆   ✧</pre>
+            <pre class="stars star-group-3">
+ ★   ⋆    ✧    ⋆   ✦   ˚    ✦  ⋆   ⋆   ✦    ˚   ⋆   ✧    ⋆   ✦
+   ✦   ★     ⋆   ✧   ⋆   ✧    ⋆  ✧   ˚    ✦   ★     ⋆   ✧   ˚
+ ★   ⋆    ✧    ⋆   ✦   ˚    ✦  ⋆   ⋆   ✦    ˚   ⋆   ✧    ⋆   ✦
+   ✦   ★     ⋆   ✧   ⋆   ✧    ⋆  ✧   ˚    ✦   ★     ⋆   ✧   ˚</pre>
+        </div>
+        <pre id="dino">
+   ▄▄
+  (◕◡◕)
+  ╱║╲
+   ╨ ╨</pre>
+        <div id="score">得分: 0</div>
+    </div>
+    <div id="game-over" class="hidden">
+        游戏结束！<br>
+        点击任意处重新开始
+    </div>
+    <script src="game.js"></script>
+</body>
+</html> 
