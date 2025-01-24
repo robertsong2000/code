@@ -1,0 +1,93 @@
+ {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #f0f0f0;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    text-align: center;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.game-info {
+    margin-bottom: 20px;
+}
+
+.score, .time {
+    font-size: 1.2em;
+    margin: 0 10px;
+}
+
+button {
+    padding: 8px 16px;
+    margin: 0 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.start-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+.back-btn {
+    background: #2196F3;
+    color: white;
+}
+
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.hole {
+    background: #795548;
+    border-radius: 50%;
+    overflow: hidden;
+    aspect-ratio: 1;
+    position: relative;
+}
+
+.mole {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    bottom: -100%;
+    transition: bottom 0.1s;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+}
+
+.mole::after {
+    content: '🐹';  /* 可以换成其他表情符号：🐰 🐭 🐹 */
+}
+
+.mole.up {
+    bottom: 0;
+}
+
+.mole:active::after {
+    content: '💫';  /* 被打中时显示的表情 */
+} 

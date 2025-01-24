@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飞机大战</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>萝卜飞机大战 ✈️</h1>
+        <div class="game-info">
+            <span class="score">得分: 0</span>
+            <span class="lives">生命: 3</span>
+            <button onclick="startGame()" class="start-btn">开始游戏</button>
+            <button onclick="location.href='../index.html'" class="back-btn">返回主页</button>
+        </div>
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+        <div class="controls">
+            <p>使用方向键或WASD移动飞机，空格键发射子弹</p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 

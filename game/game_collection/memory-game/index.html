@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记忆配对游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>萝卜爱阿秋 ❤️</h1>
+        <div class="stats">
+            <span class="moves">步数: 0</span>
+            <button onclick="resetGame()">重新开始</button>
+            <button onclick="toggleInstructions()" class="help-btn">游戏说明</button>
+            <button onclick="location.href='../index.html'" class="back-btn">返回主页</button>
+        </div>
+        <div class="game-board"></div>
+    </div>
+    
+    <div class="instructions-modal" id="instructionsModal">
+        <div class="modal-content">
+            <h2>游戏说明</h2>
+            <ul>
+                <li>点击卡片将其翻开</li>
+                <li>每次可以翻开两张卡片</li>
+                <li>找到相同图案的两张卡片即可配对成功</li>
+                <li>配对成功的卡片会保持翻开状态</li>
+                <li>找出所有配对即可获胜</li>
+                <li>尽量用最少的步数完成游戏哦！</li>
+            </ul>
+            <button onclick="toggleInstructions()">关闭</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
