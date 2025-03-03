@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幸运抽奖系统</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>幸运抽奖系统</h1>
+        
+        <div class="upload-section">
+            <input type="file" id="fileInput" accept=".xlsx,.csv" />
+            <p class="hint">支持上传 Excel(.xlsx) 或 CSV 文件</p>
+        </div>
+
+        <div class="draw-section">
+            <div class="draw-controls">
+                <input type="number" id="winnerCount" min="1" value="1" />
+                <button id="drawButton" disabled>开始抽奖</button>
+            </div>
+
+            <div class="winner-display">
+                <h2>中奖名单</h2>
+                <div id="winnerList" class="winner-list"></div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
