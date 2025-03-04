@@ -1,0 +1,635 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
+
+# If not running interactively, don't do anything
+[ -z "$PS1" ] && return
+
+# don't put duplicate lines in the history. See bash(1) for more options
+# ... or force ignoredups and ignorespace
+HISTCONTROL=ignoredups:ignorespace
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+#force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+	color_prompt=yes
+    else
+	color_prompt=
+    fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# some more ls aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+#if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
+#    . /etc/bash_completion
+#fi
+
+alias gerp='grep'
+alias grpe='grep'
+alias h='history'
+alias h1='history 10'
+alias h2='history 20'
+alias h3='history 30'
+alias ls='ls --color'
+alias ooffice='libreoffice'
+alias sl='ls --color'
+alias vi='vim'
+alias vimx='vim'
+alias w3m='w3m -B'
+alias yum='yum -y'
+
+HISTCONTROL=ignoredups
+HISTFILE=$HOME/.bash_history_for_robertsong
+HISTFILESIZE=1000000000
+HISTIGNORE=pwd:ls:
+HISTSIZE=1000000
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+PATH=$HOME/bin:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/opt/SEGGER/JLink
+SVN_EDITOR=vim.gtk
+
+c ()
+{
+    echo "$@" | xclip
+}
+
+ccl ()
+{
+    echo "$@" | xclip -selection clipboard
+}
+
+ra_dumpfunc ()
+{
+    file="$1";
+    func="$2";
+    nm -CS "$file" | grep "$func" | awk '{print $1, $2}' | while read line; do
+        i=$(echo $line | awk '{print $1}');
+        j=$(echo $line | awk '{print $2}');
+        objdump -CS "$file" --start-address=0x$i --stop-address=$((0x$i + 0x$j ));
+    done
+}
+
+fa ()
+{
+    find . -iwholename "*$@*"
+}
+
+fd ()
+{
+    find . -type d -iwholename "*$@*"
+}
+
+ff ()
+{
+    find . -type f -iwholename "*$@*"
+}
+
+ra_functrace2kcache ()
+{
+    if [ -z "$1" ]; then
+        echo "no cmd";
+    else
+        tmp=`mktemp`;
+        valgrind --tool=callgrind --log-file=$tmp "$@";
+	pid=`cat $tmp | head -1 | awk '{print $1}' | sed -e 's/==//g'`;
+	kcachegrind callgrind.out.$pid;
+    fi
+}
+
+
+ra_functrace2graph()
+{
+    if [ -z "$1" ]; then
+        echo "no cmd";
+    else
+        tmp=`mktemp`;
+        valgrind --tool=callgrind --log-file=$tmp "$@";
+	pid=`cat $tmp | head -1 | awk '{print $1}' | sed -e 's/==//g'`;
+        ra_dot2graph callgrind.out.$pid full;
+    fi
+
+}
+
+ra_dot2graph ()
+{
+    if [ -z "$1" ]; then
+        echo "no file";
+    else
+	if [[ -n "$2" && "$2" == "full" ]]; then
+	    gprof2dot -n 0.01 -e 0.001 --format=callgrind --output=out.dot $1
+	    dot -Tsvg out.dot -o /media/sf_Downloads/graph_full.svg
+	else
+	    gprof2dot -n 0.1 -e 0.01 --format=callgrind --output=out.dot $1
+	    dot -Tsvg out.dot -o /media/sf_Downloads/graph.svg
+	fi
+
+    fi
+}
+
+is64bit ()
+{
+    cat /proc/cpuinfo | grep "\<lm\>" > /dev/null 2>&1;
+    if [ $? == 0 ]; then
+        echo "is 64 bit";
+    else
+        echo "not 64 bit";
+    fi
+}
+
+MARKPATH=$HOME/.marks
+jump ()
+{
+    cd -P "$MARKPATH/$1" 2> /dev/null || echo "No such mark: $1"
+}
+mark ()
+{
+    mkdir -p "$MARKPATH";
+    ln -s "$(pwd)" "$MARKPATH/$1"
+}
+
+
+kconfigcscope ()
+{
+    find -L . -name "Kconfig*" -not -wholename "*\.pc*" -not -wholename "*\.svn*" > kconfig.cscope.files;
+    cscope -bi kconfig.cscope.files -f kconfig.cscope.out
+}
+
+marks ()
+{
+    ls --color -l "$MARKPATH" | sed 's/  / /g' | cut -d' ' -f9- | sed 's/ -/\t-/g' && echo
+}
+
+_completemarks() {
+  local curw=${COMP_WORDS[COMP_CWORD]}
+  local wordlist=$(find $MARKPATH -type l -printf "%f\n")
+  COMPREPLY=($(compgen -W '${wordlist[@]}' -- "$curw"))
+  return 0
+}
+
+complete -F _completemarks jump unmark
+
+pythoncscope ()
+{
+    find -L . -name "*.py" -not -wholename "*\.pc*" > python.cscope.files;
+    cscope -bi python.cscope.files -f python.cscope.out
+}
+
+ra_build ()
+{
+    mkdir _build
+    cd _build
+    ../configure --prefix=$(pwd)/../_install
+    make
+    make install
+}
+
+ra_check_gcc_version ()
+{
+    arm-sony-linux-gnueabi-dev-gcc -v 2>&1 | grep "gcc version"
+}
+
+ra_commit ()
+{
+    svn log $@ > /dev/null 2>&1;
+    if [ $? -eq 1 ]; then
+        svn add $@;
+    fi;
+    svn commit -m'update' $@
+}
+
+ra_cscope ()
+{
+    find . -name "*.[chsS]" | grep -v "\.pc" > cscope.files;
+    cscope -b -icscope.files
+}
+
+ra_dot ()
+{
+    if [ -z "$1" ]; then
+        echo "no file";
+    else
+        dot_file=$1;
+        png_file=$(echo $dot_file | sed -e 's/dot/png/');
+        dot -Tpng $dot_file -o $png_file;
+	mv $png_file /media/sf_Downloads/;
+        gnome-open /media/sf_Downloads/$png_file;
+    fi
+}
+
+ra_fm_cscope ()
+{
+    find . -name "*.[ch]" > cscope.files;
+    find plf -name "*.s" >> cscope.files;
+    cscope -q -bi cscope.files
+}
+
+ra_fmt ()
+{
+    astyle --style=linux -Sw -fpXHU -jk3 -n -z2 $@
+}
+
+ra_get_link ()
+{
+    ccl $(svn info $1 | grep URL | sed -e 's/URL: //')
+}
+
+ra_get_src ()
+{
+    match_line=$(dpkg -S "$1" | grep ":" | head -1);
+    if [ $? != 0 ]; then
+        echo "no pkg found!";
+        return 1;
+    fi;
+    match_pkg=$(echo $match_line | sed -e 's/:.*//');
+    echo "start to get source of $match_pkg ...";
+    apt-get source $match_pkg
+}
+
+ra_get_sym ()
+{
+    addr=$(nm $1 | grep "\<$2\>" | awk '{print $1}');
+    addr2line -f -e $1 $addr
+}
+
+ra_git_diff ()
+{
+    jump codebase;
+    for i in $(cat ~/bin/clone_5.8.sh  |grep "git clone" | sed -e 's/.*yoc_ali\///'  -e 's/ -b .*//');
+    do
+        name=$(echo $i | sed -e 's/.*\///');
+        cd $i;
+        git diff . > /tmp/$name.diff;
+        cd -;
+    done
+}
+
+ra_killqemu ()
+{
+    for i in $(ps aux |grep [q]p/main.py | awk '{print $2}' );
+    do
+        kill -9 $i;
+    done;
+    for i in $(ps aux |grep [v]d_main | awk '{print $2}' );
+    do
+        kill -9 $i;
+    done;
+    for i in $(ps aux |grep [q]emu-system-arm | awk '{print $2}' );
+    do
+        kill -9 $i;
+    done
+}
+
+ra_qemu_kernel_dbg ()
+{
+    ##arm-buildroot-linux-gnueabihf-gdb \
+    arm-none-eabi-gdb-py \
+    $HOME/code/buildroot-2020.02.7/output/build/linux-4.19.91/vmlinux \
+    -ex "target remote localhost:1234"
+}
+
+ra_remote_port ()
+{
+    nc -w 5 $1 $2 && echo true
+}
+
+ra_resetinput ()
+{
+    /usr/bin/ibus-daemon -d -x -r
+}
+
+
+#ra_start_qemu ()
+#{
+#    qemu-system-arm -M versatilepb -kernel $HOME/source/linux-3.15.4/arch/arm/boot/zImage -nographic -append "console=ttyAMA0 root=/dev/nfs nfsroot=43.82.154.23://tftpboot/target-pfx rw ip=on" -net user -net nic
+#}
+
+ra_whichenv ()
+{
+    export | grep TARGET_CPU
+}
+
+ra_whichpkg ()
+{
+    rpm -qf $(which $@)
+}
+
+ra_whichvroot ()
+{
+    i=$(env | grep VROOT_CFG | sed -e 's/VROOT_CFG=//');
+    if [[ -z $i ]]; then
+        echo "no vroot";
+    else
+        cat $i;
+    fi
+}
+
+ra_gdb_server ()
+{
+    JLinkGDBServer -device GD32F407VE -if swd -speed 2000
+}
+
+ra_gdb_client ()
+{
+    arm-none-eabi-gdb \
+    /media/sf_Downloads/mcu-moped/boards/d51_app/d51_app/d51_app.axf \
+    -nx -x ~/.gdbinit_etag \
+    -ex "target remote localhost:2331"
+}
+
+ra_gdb_etag_client ()
+{
+    arm-none-eabi-gdb \
+    ~/esl/ali-etag-sx1262/build/src/apps/e-tag/e-tag \
+    -nx -x ~/.gdbinit_etag \
+    -ex "target remote localhost:2331"
+}
+ra_stm_gdb_server ()
+{
+    JLinkGDBServer -device STM32L476RGTx -if swd -speed 4000
+}
+
+ra_stm_gdb_client ()
+{
+    arm-none-eabi-gdb \
+    ~/LoRaNodeSDK/LoRaMac-node/build/src/apps/LoRaMac/SdkExample-LoRaWanModule \
+    -nx -x ~/.gdbinit_etag \
+    -ex "target remote localhost:2331"
+}
+
+ra_rak_minicom ()
+{
+    sudo minicom -w -D /dev/ttyUSB2 -C $HOME/log/minicom_$(date +%Y%m%d_%H%M).log
+}
+
+ra_esp_minicom ()
+{
+    sudo minicom -w -D /dev/ttyUSB1 -C $HOME/log/minicom_$(date +%Y%m%d_%H%M).log
+}
+
+ra_rak_gdb_client ()
+{
+    arm-none-eabi-gdb \
+    ~/LoRaNodeSDK/LoRaMac-node/build/src/apps/LoRaMac/SdkExample-LoRaWanModule \
+    -nx -x ~/.gdbinit_etag \
+    -ex "target remote localhost:2331"
+}
+
+ra_rak_gdb_server ()
+{
+    JLinkGDBServer -device STM32L151CB -if swd -speed 4000
+}
+
+ra_esp_gdb_client ()
+{
+    cd /home/robertsong/mcu_gateway/esp-aliyun/examples/solutions/smart_light
+    xtensa-esp32-elf-gdb -x gdbinit build/smart_light.elf
+}
+
+ra_esp_gdb_server ()
+{
+    cd ~/esp/openocd-esp32
+    sudo  bin/openocd -s share/openocd/scripts -f interface/ftdi/esp32_devkitj_v1.cfg -f board/esp-wroom-32.cfg
+}
+
+ra_etag_start_gdb_client_linkwan ()
+{
+    arm-none-eabi-gdb \
+    ~/esl/ali-etag-sx1262/build/src/apps/linkwan/linkwan \
+    -nx -x ~/.gdbinit_etag \
+    -ex "target remote localhost:2331"
+}
+
+ra_stm_minicom ()
+{
+    sudo minicom -w -D /dev/ttyACM0 -b 921600 -C $HOME/log/minicom_$(date +%Y%m%d_%H%M).log
+}
+
+ra_asr_minicom ()
+{
+    sudo minicom -w -D /dev/ttyUSB0 -b 115200 -C $HOME/log/minicom_$(date +%Y%m%d_%H%M).log
+}
+
+ra_mxchip_minicom ()
+{
+    sudo minicom -w -D /dev/ttyUSB0 -C $HOME/log/minicom_$(date +%Y%m%d_%H%M).log
+}
+
+ra_mxchip_flash ()
+{
+    st-flash write $HOME/code/classb/aos/out/lorawan.linkwan@eml3047/binary/lorawan.linkwan@eml3047.bin 0x8000000
+}
+
+ra_mxchip_gdb_server ()
+{
+    sudo st-util
+}
+
+ra_mxchip_gdb_client ()
+{
+    arm-none-eabi-gdb \
+    $HOME/code/classb/aos/out/lorawan.linkwan@eml3047/binary/lorawan.linkwan@eml3047.elf \
+    -nx -x ~/.gdbinit \
+    -ex "target remote localhost:4242"
+}
+
+ragit ()
+{
+    if [ -z "$1" ]; then
+        echo "no file";
+    else
+        git add "$@";
+        git commit -m 'init' "$@";
+        git push;
+    fi
+}
+
+raopen ()
+{
+    if [ -z "$1" ]; then
+        echo "no file";
+    else
+        x="${1%%"."*}";
+        if [[ $x = $1 ]]; then
+            vim.gtk "$@";
+        else
+            len="${#x}";
+            strlen="${#1}";
+            leftlen="$(($len - $strlen + 1))";
+            subfix="${1:leftlen}";
+            echo $subfix;
+            if [ "$subfix" == "pdf" ]; then
+                mupdf-x11 "$@";
+            else
+                if [[ "$subfix" == "doc" || "$subfix" == "docx" || "$subfix" == "pptx" ]]; then
+                    libreoffice "$@";
+                else
+                    vim.gtk "$@";
+                fi;
+            fi;
+        fi;
+    fi
+}
+
+ravim ()
+{
+    vim $(which $1)
+}
+
+rm ()
+{
+    local path;
+    for path in "$@";
+    do
+        if [[ "$path" = -* ]]; then
+            :;
+        else
+            local dst=${path##*/};
+            while [ -e ~/.Trash/"$dst" ]; do
+                dst="$dst "$(date +%H-%M-%S);
+            done;
+            mv "$path" ~/.Trash/"$dst";
+        fi;
+    done
+}
+
+unmark ()
+{
+    rm -i "$MARKPATH/$1"
+}
+
+whichenv ()
+{
+    if [[ -z "$PRESET_MODEL" ]]; then
+        echo "normal env";
+    else
+        if [[ "$PRESET_MODEL" == "SYS_UH_S" && "$TARGET_TYPE" = "set" ]]; then
+            echo "QEMU build env";
+        else
+            if [[ "$PRESET_MODEL" == "SYS_UH_S" && "$TARGET_TYPE" = "nfs" ]]; then
+                echo "wifi build env";
+            fi;
+        fi;
+    fi
+}
+
+whichpid ()
+{
+    if [ -z "$1" ]; then
+        echo "no pid";
+    else
+        ps aux | grep "$1" | grep -v grep | while read line; do
+            echo $line | awk '{out=""; out="pid: "$2"\tcmd:"; for(i=11; i<=NF; i++){out=out" "$i}; print out;}';
+        done;
+    fi
+}
+
+whichpkg ()
+{
+    if [ -z "$1" ]; then
+        echo "no input";
+    else
+        which $1 --skip-alias --skip-functions | while read line; do
+            rpm -qf $line;
+        done;
+    fi
+}
+
+ra_open_minicom ()
+{
+    minicom_dev_name=$1
+    vim $(ps auxw |grep -i [m]inicom.*$minicom_dev_name | sed -e 's/.*-C //' | head -1)
+}
+
+ra_check_cpu_ranking ()
+{
+    ps -eT -o %cpu,pid,tid,ppid,comm|grep -v CPU| sort -n -r| head -20
+}
+
+stty -ixon
+
+export PATH=$HOME/cmake-3.24.1-linux-aarch64/bin:$PATH
+export MAN_DISABLE_SECCOMP=1
+export RUSTUP_UPDATE_ROOT=https://mirrors.aliyun.com/rustup/rustup
+export RUSTUP_DIST_SERVER=https://mirrors.aliyun.com/rustup
+export EDITOR=vim
+
+tmux attach
+export PATH="/opt/miniconda3/bin:$PATH"
+export PATH=~/bin:$PATH
+
+export LANG=zh_CN.UTF-8
