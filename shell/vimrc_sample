@@ -1,0 +1,518 @@
+set nocompatible
+set formatoptions=cqmt
+set hidden
+set tw=70
+set autoindent
+set nu
+set showcmd
+set ic
+set autoindent
+set expandtab
+set syntax=conf
+set sw=2
+"set list
+"set mouse=a
+set noswapfile
+"colorscheme default
+"set bg=light
+"colors evening
+"set formatoptions+=mt
+"map <C-J> <C-W>j<C-W>_
+"map <C-K> <C-W>k<C-W>_
+map <C-J> <C-W>j
+map <C-K> <C-W>k
+map <C-H> <C-W>h<bar>
+map <C-L> <C-W>l<bar>
+set wmh=0
+nmap <C-A> :n<CR><CR>
+nmap <C-Q> :N<CR><CR>
+nmap <C-\>a :vimgrep <C-R>=expand("<cword>")<CR> %:p<CR><CR>
+nmap <C-\>b :!inter_file.sh %:p<CR>
+nmap <C-\>v :Nr git show <C-R>=expand("<cword>")<CR><CR>
+nmap <C-\>l :VCSLog<CR>
+nmap <C-\>f :grep -ri <C-R>=expand("<cfile>")<CR> $(find . -name
+"*.[ch]")<CR>
+vmap <C-\>f y:grep -ri <C-R>0 $(find . -name "*.[ch]")<CR>
+map <C-\>m :Man <C-R>=expand("<cword>")<CR><CR>
+vmap <C-\>n y:Find <C-R>0<CR>
+vmap <C-\>m y:Man <C-R>0<CR>
+map <C-\>q :Nr sdcv <C-R>=expand("<cword>")<CR><CR>
+
+"""""""""""""""
+"cscope setting
+"""""""""""""""
+if has("cscope")
+  "set csprg=/usr/bin/ra_cscope.sh
+  set csto=1
+  set cst
+  set nocsverb
+  " add any database in current directory
+  if filereadable("cscope.out")
+  	cs add cscope.out
+  endif
+  if filereadable("kconfig.cscope.out")
+      cs add kconfig.cscope.out
+  endif
+  set csverb
+endif
+nmap <C-\>s :cs find s <C-R>=expand("<cword>")<CR><CR>
+vmap <C-\>s y:cs find s <C-R>0<CR>
+nmap <C-\>g :cs find g <C-R>=expand("<cword>")<CR><CR>
+vmap <C-\>g y:cs find g <C-R>0<CR>
+nmap <C-\>c :cs find c <C-R>=expand("<cword>")<CR><CR>
+vmap <C-\>c y:cs find c <C-R>0<CR>
+nmap <C-\>t :cs find t <C-R>=expand("<cword>")<CR><CR>
+vmap <C-\>t y:cs find t <C-R>0<CR>
+nmap <C-\>e :cs find e <C-R>=expand("<cword>")<CR><CR>
+vmap <C-\>e y:cs find e <C-R>0<CR>
+"nmap <C-\>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
+"vmap <C-\>f y:cs find f <C-R>0<CR>
+nmap <C-\>i :cs find i <C-R>=expand("<cfile>")<CR><CR>
+vmap <C-\>i y:cs find i <C-R>0<CR>
+nmap <C-\>d :cs find d <C-R>=expand("<cword>")<CR><CR>
+vmap <C-\>d y:cs find d <C-R>0<CR>
+
+"split windows
+nmap <C-\>S :vert scs find s <C-R>=expand("<cword>")<CR><CR>
+vmap <C-\>S y:vert scs find s <C-R>0<CR>
+nmap <C-\>G :vert scs find g <C-R>=expand("<cword>")<CR><CR>
+vmap <C-\>G y:vert scs find g <C-R>0<CR>
+nmap <C-\>C :vert scs find c <C-R>=expand("<cword>")<CR><CR>
+vmap <C-\>C y:vert scs find c <C-R>0<CR>
+nmap <C-\>T :vert scs find t <C-R>=expand("<cword>")<CR><CR>
+vmap <C-\>T y:vert scs find t <C-R>0<CR>
+nmap <C-\>E :vert scs find e <C-R>=expand("<cword>")<CR><CR>
+vmap <C-\>E y:vert scs find e <C-R>0<CR>
+nmap <C-\>I :vert scs find i <C-R>=expand("<cfile>")<CR><CR>
+vmap <C-\>I y:vert scs find i <C-R>0<CR>
+nmap <C-\>D :vert scs find d <C-R>=expand("<cword>")<CR><CR>
+vmap <C-\>D y:vert scs find d <C-R>0<CR>
+"split windows end
+
+nmap <C-]> :cs find g <C-R>=expand("<cword>")<CR><CR>
+vmap <C-]> y:cs find g <C-R>0<CR>
+map g<C-]> :cs find 3 <C-R>=expand("<cword>")<CR><CR>
+map g<C-/> :cs find 0 <C-R>=expand("<cword>")<CR><CR>
+map g<C-d> :bd<CR>
+map g<C-a> :ba<CR>
+vmap <C-/>q y:Dict <C-R>0<CR>
+nmap <C-/>q :Dict <C-R>=expand("<cword>")<CR><CR>
+
+"map <f9> :make
+map <f9> :call ToggleSketch()<CR>
+map <Esc>s :w<CR>
+"map <C-\>a :set tw=0<CR>
+set tabstop=8
+"set tabstop=8
+set vb t_vb=
+nnoremap <silent> <F4> :Grep<CR>
+"<Ctrl-C> -- copy (goto visual mode and copy)
+"
+"imap <C-C> <C-O>vgG
+"vmap <C-C> "*y<Esc>i
+"
+"Netrw paramter
+let netrw_browse_split=3
+filetype plugin on
+
+vmap ;ah yi<a href="<Esc>pa"><Esc>$a</a>
+nmap    ;al     <Esc>x'&lt;'
+
+"For Emacs-style editing on the command-line
+" start of line
+:cnoremap <C-A> <Home>
+" back one character
+:cnoremap <C-B> <Left>
+" delete character under cursor
+:cnoremap <C-D> <Del>
+" end of line
+:cnoremap <C-E> <End>
+" forward one character
+:cnoremap <C-F> <Right>
+" recall newer command-line
+:cnoremap <C-N> <Down>
+" recall previous (older) command-line
+:cnoremap <C-P> <Up>
+" back one word
+:cnoremap <Esc><C-B> <S-Left>
+" forward one word
+:cnoremap <Esc><C-F> <S-Right>
+
+set comments=s1:/*,mb:*,ex:*/,://,b:#,:%,:XCOMM,n:>,fb:-
+
+map <buffer> K :execute "!pydoc " . expand("<cword>")<CR>
+"set iskeyword+=.
+"autocmd BufEnter * call DoWordComplete()
+map <c-n> :cnext<CR>
+map <c-p> :cprev<CR>
+map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR>
+set wildmode=longest,list
+let g:netrw_sort_sequence=''
+let g:netrw_browse_split=1
+set history=1000
+filetype plugin on
+
+" Find file in current directory and edit it.
+function! Find(...)
+  let path="."
+  if a:0==2
+    let path=a:2
+  endif
+  let l:list=system("find ".path. " -iname '".a:1."' | grep -v .svn ")
+  let l:num=strlen(substitute(l:list, "[^\n]", "", "g"))
+  if l:num < 1
+    echo "'".a:1."' not found"
+    return
+  endif
+  if l:num == 1
+    exe "open " . substitute(l:list, "\n", "", "g")
+  else
+    let tmpfile = tempname()
+    exe "redir! > " . tmpfile
+    silent echon l:list
+    redir END
+    let old_efm = &efm
+    set efm=%f
+
+    if exists(":cgetfile")
+        execute "silent! cgetfile " . tmpfile
+    else
+        execute "silent! cfile " . tmpfile
+    endif
+
+    let &efm = old_efm
+
+    " Open the quickfix window below the current window
+    botright copen
+
+    call delete(tmpfile)
+  endif
+endfunction
+command! -nargs=* Find :call Find(<f-args>)
+
+" Start of script
+" Location where the temporary file (.fif.tmp) would be stored
+let g:Fif_tmp_dir = "/tmp"
+function! Fif_fun(...)
+  if a:0 == 0
+    " Print usage info and quit
+    echo "Usage: Fif <pattern-to-be-searched> <file-pattern>. E.g:"
+    echo "Fif struct *.c"
+    echo "searches for the word struct in all the c files from the current directory"
+    return
+  endif
+  if a:0 != 2
+    echohl Error
+    echo "Error! Wrong number of arguments. Type :Fif with no arguments to see usage"
+    echohl None
+    return
+  endif
+  let tmp_file = g:Fif_tmp_dir . "/.fif.tmp"
+  execute "!touch " . tmp_file . " 2> /dev/null"
+  if ! filewritable(tmp_file)
+    echohl Error
+    echo "No permissions to create " . tmp_file
+    echo "Try setting the g:Fif_tmp_dir variable to the right value"
+    echohl None
+    return
+  endif
+  " Put quotes around the file pattern
+  let com_string = '!find . -iname "' . a:2 . '" '
+  " Do NOT put quotes around the pattern to be searched - leave it to the user
+  let com_string = com_string . '-exec grep -n ' . a:1 . ' /dev/null {} \; > ' . tmp_file
+  execute com_string
+  if ! filereadable(tmp_file)
+    echohl Error
+    echo "Can't open " . tmp_file . " for reading"
+    echohl None
+    return
+  endif
+  execute "cfile " . tmp_file
+  execute '!rm -f ' . tmp_file . ' 2> /dev/null'
+endfunction
+command! -nargs=* Fif call Fif_fun(<f-args>)
+
+set cursorline
+set path =.,include,/usr/include,,
+
+command! -nargs=+ -complete=command TabMessage call TabMessage(<q-args>)
+command! -bar -nargs=0 SudoW   :silent exe "write !sudo tee % >/dev/null"|silent edit!
+
+map ,# :s/^/#/<CR>
+map ,/ :s/^/\/\//<CR>
+map ,> :s/^/> /<CR>
+set shellcmdflag=-ic
+
+autocmd BufReadPre *.pdf set ro nowrap
+autocmd BufReadPost *.pdf silent %!pdftotext "%" -nopgbrk -layout -q -eol unix -
+autocmd BufWritePost *.pdf silent !rm -rf ~/PDF/%
+autocmd BufWritePost *.pdf silent !lp -s -d pdffg "%"
+autocmd BufWritePost *.pdf silent !until [ -e ~/PDF/% ]; do sleep 1; done
+autocmd BufWritePost *.pdf silent !mv ~/PDF/% %:p:h
+set nowrapscan
+
+function! Info(...)
+  let l:pad = ""
+  for s in a:000
+    let l:pad = l:pad . " "
+    let l:pad = l:pad . s
+  endfor
+  execute "Nr info --subnodes --output -" . l:pad
+  execute "set filetype=man"
+
+endfunction
+com! -nargs=* Info call Info(<f-args>)
+
+function! Nr(...)
+  let l:pad = ""
+  let tmpfile = tempname()
+  execute "top sp " . tmpfile
+  for s in a:000
+    let l:pad = l:pad . " "
+    let l:pad = l:pad . s
+  endfor
+  execute "r!". l:pad
+  execute "set syntax=diff"
+  execute "w"
+  normal gg
+  exe "normal \<C-W>t\<C-W>_"
+endfunction
+com! -nargs=* Nr call Nr(<f-args>)
+
+function! Splint(...)
+  let l:pad = ""
+  for s in a:000
+    let l:pad = l:pad . " "
+    let l:pad = l:pad . s
+  endfor
+  let tmpfile = tempname()
+  let l:list=system("splint -warnposix -preproc +matchanyintegral -predboolint -temptrans -boolops -globstate -statictrans -onlytrans -nullpass -nullassign ".l:pad)
+  exe "redir! > " . tmpfile
+  silent echon l:list
+  redir END
+  if exists(":cgetfile")
+      execute "silent! cgetfile " . tmpfile
+  else
+      execute "silent! cfile " . tmpfile
+  endif
+  " Open the quickfix window below the current window
+  botright copen
+
+  call delete(tmpfile)
+endfunction
+com! -nargs=* Splint call Splint(<f-args>)
+
+" function Quilt(...)
+"   let l:pad = ""
+"   for s in a:000
+"     let l:pad = l:pad . " "
+"     let l:pad = l:pad . s
+"   endfor
+"   let tmpfile = tempname()
+"   let l:list=system("quilt  ".l:pad)
+"   exe "redir! > " . tmpfile
+"   silent echon l:list
+"   redir END
+"   if exists(":cgetfile")
+"       execute "silent! cgetfile " . tmpfile
+"   else
+"       execute "silent! cfile " . tmpfile
+"   endif
+"   " Open the quickfix window below the current window
+"   botright copen
+"
+"   call delete(tmpfile)
+" endfunction
+" com -nargs=* Quilt call Quilt(<f-args>)
+
+function! Git(...)
+  let l:pad = ""
+  for s in a:000
+    let l:pad = l:pad . " "
+    let l:pad = l:pad . s
+  endfor
+  let tmpfile = tempname()
+  let l:list=system("git ".l:pad)
+  exe "redir! > " . tmpfile
+  silent echon l:list
+  redir END
+  if exists(":cgetfile")
+      execute "silent! cgetfile " . tmpfile
+  else
+      execute "silent! cfile " . tmpfile
+  endif
+  " Open the quickfix window below the current window
+  botright copen
+
+  call delete(tmpfile)
+endfunction
+com! -nargs=* Git call Git(<f-args>)
+
+function! Pycheck(...)
+  let l:pad = ""
+  for s in a:000
+    let l:pad = l:pad . " "
+    let l:pad = l:pad . s
+  endfor
+  let tmpfile = tempname()
+  let l:list=system("pylint ".l:pad)
+  exe "redir! > " . tmpfile
+  silent echon l:list
+  redir END
+  if exists(":cgetfile")
+      execute "silent! cgetfile " . tmpfile
+  else
+      execute "silent! cfile " . tmpfile
+  endif
+  " Open the quickfix window below the current window
+  botright copen
+
+  call delete(tmpfile)
+endfunction
+com! -nargs=* Pycheck call Pycheck(<f-args>)
+
+function! Racscope(...)
+  execute "!cscope -bR"
+  redir => s
+  execute "silent cs s"
+  redir END
+  echon s
+  if empty(":cs s")
+        execute "silent cs add cscope.out"
+  else
+        execute "silent cscope r"
+  endif
+endfunction
+
+com! -nargs=* Racscope call Racscope(<f-args>)
+
+function! Dict(cmd)
+  let tmpfile = tempname()
+  let l:list=system("w3m -dump http://dic.yahoo.co.jp/search?p=" . a:cmd)
+"  let l:list=system("w3m -dump http://dict.baidu.com/s?wd=" . a:cmd)
+  exe "redir! > " . tmpfile
+  silent echon l:list
+  redir END
+  if exists(":cgetfile")
+      execute "silent! cgetfile " . tmpfile
+  else
+      execute "silent! cfile " . tmpfile
+  endif
+  " Open the quickfix window below the current window
+  botright copen
+  call delete(tmpfile)
+endfunction
+
+com! -nargs=* Dict call Dict(<f-args>)
+set viminfo='20,<1000,s10,h
+let g:ref_alc_cmd='w3m -dump %s'
+set cscopequickfix=s-,c-,d-,i-,t-,e-,g-
+set shiftwidth=2
+"let g:SuperTabRetainCompletionType = 2
+"let g:SuperTabDefaultCompletionType = "<C-X><C-O>"
+
+
+" start of line
+cnoremap <C-A>        <Home>
+" back one character
+cnoremap <C-B>        <Left>
+" delete character under cursor
+cnoremap <C-D>        <Del>
+" end of line
+cnoremap <C-E>        <End>
+" forward one character
+cnoremap <C-F>        <Right>
+" recall newer command-line
+cnoremap <C-N>        <Down>
+" recall previous (older) command-line
+cnoremap <C-P>        <Up>
+" back one word
+cnoremap <Esc><C-B>    <S-Left>
+" forward one word
+cnoremap <Esc><C-F>    <S-Right>
+
+map <c-n> :cnext<CR>
+map <c-p> :cprev<CR>
+
+let g:pydiction_location = '$HOME/.vim/pydiction-1.2/complete-dict'
+let g:pydiction_menu_height = 20
+"autocmd FileType python compiler pylint
+"let g:pylint_onwrite = 0
+autocmd FileType python let &makeprg='pylint %\|sed "s/^\(\w*\):\s*\([0-9]\+\)/%:\2:\ \1:\ /g"'
+"autocmd BufWritePost *.py make
+
+"let g:miniBufExplMapWindowNavArrows = 1"
+function! PythonMode()
+        set tabstop=4
+        set shiftwidth=4
+        set smarttab
+        set noexpandtab
+        set softtabstop=4
+        set expandtab
+        set tw=0
+endfunction
+
+augroup python
+        autocmd BufNewFile,BufRead *.py call PythonMode()
+augroup END
+
+function! BashMode()
+        set tabstop=4
+        set shiftwidth=4
+        set smarttab
+        set expandtab
+        set softtabstop=4
+	set tw=0
+endfunction
+
+augroup BashMode
+        autocmd BufNewFile,BufRead *.sh call BashMode()
+augroup END
+
+function! CMode()
+	set expandtab
+endfunction
+
+augroup CMode
+        autocmd BufNewFile,BufRead *.c call CMode()
+augroup END
+
+function! XmlMode()
+        set formatoptions=cqmt
+	set tw=0
+endfunction
+
+augroup xml
+        autocmd BufNewFile,BufRead *.xml call XmlMode()
+augroup END
+
+nmap <F12> :!/usr/lib64/python2.6/pdb.py %<CR>
+nmap <F5> :!/usr/bin/python %<CR>
+set hlsearch
+
+"#set fileencodings=latin1,utf-8,ucs-bom,cp936
+let Tlist_Show_One_File = 1
+set shellcmdflag=-c
+
+augroup reload_vimrc
+    autocmd!
+    autocmd BufWritePost $MYVIMRC source $MYVIMRC
+augroup END
+
+
+function! TabMessage(cmd)
+  redir => message
+  silent execute a:cmd
+  redir END
+  tabnew
+  silent put=message
+  set nomodified
+endfunction
+command! -nargs=+ -complete=command TabMessage call TabMessage(<q-args>)
+
+highlight WhitespaceEOL ctermbg=red guibg=red
+"highlight WhitespaceEOL ctermbg=red guibg=red
+highlight DiffAdd           ctermfg=10 ctermbg=2  guifg=white guibg=green
+highlight DiffChange        ctermfg=4  ctermbg=2  guifg=white guibg=yellow
+highlight DiffDelete        ctermfg=9  ctermbg=2  guifg=white guibg=red
+highlight DiffText          ctermfg=12 ctermbg=3  guifg=white guibg=magenta
