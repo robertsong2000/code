@@ -86,7 +86,9 @@ apt install -y \
     cscope \
     htop \
     lsof \
-    strace
+    strace \
+    apt-file \
+    bsdmainutils
 
 # 安装额外的开发库
 log "安装开发库..."
@@ -102,6 +104,8 @@ apt install -y \
     tk-dev \
     libffi-dev \
     liblzma-dev
+
+apt-file update
 
 # 检查是否已安装 Miniconda3
 if [ -d "/opt/miniconda3" ] || command -v conda &> /dev/null; then
