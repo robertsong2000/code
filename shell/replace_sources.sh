@@ -28,7 +28,7 @@ deb $TSINGHUA_MIRROR  noble-backports main restricted universe multiverse
 # deb-src $TSINGHUA_MIRROR  noble-backports main restricted universe multiverse 
 
 # 以下安全更新软件源包含了官方源与镜像站配置，如有需要可自行修改注释切换 
-deb $UBUNTU_PORTS_MIRROR  noble-security main restricted universe multiverse 
+# deb $UBUNTU_PORTS_MIRROR  noble-security main restricted universe multiverse 
 # deb-src $UBUNTU_PORTS_MIRROR  noble-security main restricted universe multiverse 
 
 # 预发布软件源，不建议启用 
